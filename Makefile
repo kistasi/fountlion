@@ -50,11 +50,5 @@ $(TESTBIN): $(APP_OBJS) $(TEST_OBJS) | $(BUNDLE)/Contents/MacOS
 $(BUNDLE)/Contents/MacOS:
 	mkdir -p $@
 
-deploy:
-	./scripts/deploy.sh
-
-watch:
-	./scripts/deploy.sh
-
 clean:
 	rm -rf build

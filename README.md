@@ -23,3 +23,11 @@ make clean  # remove build artifacts
 ## Fountain format
 
 Fountain is a plain-text markup language for screenplays. See [fountain.io](https://fountain.io) for the spec. A sample script (`Big-Fish.fountain`) is included in the repo.
+
+## Credits
+
+The Fountain parser in `vendor/` is based on [nyousefi/Fountain](https://github.com/nyousefi/Fountain) (MIT). The rest of the code was written by [Claude Sonnet 4.6](https://claude.ai).
+
+## License
+
+MIT — see [LICENSE](LICENSE).

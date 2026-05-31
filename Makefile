@@ -10,8 +10,8 @@ XCTEST  = $(XCDEV)/Library/Xcode/Agents/xctest
 CC      = clang
 CFLAGS  = -fobjc-arc
 
-SRCS    = main.m FountainDocument.m FountainHighlighter.m FountainTextView.m \
-          vendor/FNElement.m vendor/FastFountainParser.m vendor/NSString+Regex.m
+SRCS    = src/main.m src/FountainDocument.m src/FountainHighlighter.m src/FountainTextView.m \
+          src/vendor/FNElement.m src/vendor/FastFountainParser.m src/vendor/NSString+Regex.m
 OBJS    = $(SRCS:%.m=build/obj/%.o)
 
 TEST_SRCS = tests/FountainDocumentTests.m tests/FastFountainParserTests.m \
@@ -19,7 +19,7 @@ TEST_SRCS = tests/FountainDocumentTests.m tests/FastFountainParserTests.m \
             tests/FountainTextViewTests.m
 TEST_OBJS = $(TEST_SRCS:%.m=build/obj/%.o)
 
-APP_OBJS = $(filter-out build/obj/main.o, $(OBJS))
+APP_OBJS = $(filter-out build/obj/src/main.o, $(OBJS))
 
 .PHONY: all test deploy watch clean
 
@@ -34,10 +34,13 @@ $(BINARY): $(OBJS) | $(APP)/Contents/MacOS
 build/obj/tests/%.o: tests/%.m | build/obj/tests
 	$(CC) $(CFLAGS) -F $(XCFWK) -framework XCTest -I. -c -o $@ $<
 
-build/obj/%.o: %.m | build/obj build/obj/vendor
+build/obj/src/%.o: src/%.m | build/obj/src build/obj/src/vendor
+	$(CC) $(CFLAGS) -I. -c -o $@ $<
+
+build/obj/%.o: %.m | build/obj
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(APP)/Contents/MacOS $(APP)/Contents build/obj build/obj/vendor build/obj/tests:
+$(APP)/Contents/MacOS $(APP)/Contents build/obj build/obj/src build/obj/src/vendor build/obj/tests:
 	mkdir -p $@
 
 test: $(TESTBIN)

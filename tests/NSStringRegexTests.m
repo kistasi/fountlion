@@ -1,5 +1,5 @@
 #import <XCTest/XCTest.h>
-#import "../vendor/NSString+Regex.h"
+#import "../src/vendor/NSString+Regex.h"
 
 @interface NSStringRegexTests : XCTestCase
 @end

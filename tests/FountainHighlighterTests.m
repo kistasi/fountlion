@@ -1,6 +1,6 @@
 #import <XCTest/XCTest.h>
 #import <Cocoa/Cocoa.h>
-#import "../FountainHighlighter.h"
+#import "../src/FountainHighlighter.h"
 
 // Simple script used across multiple tests:
 //   offset 0..17   "INT. OFFICE - DAY"  — Scene Heading (bold)

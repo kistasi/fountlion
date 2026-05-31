@@ -18,7 +18,9 @@ There is no way to run a single test file; `make test` runs all tests via `xctes
 
 ## Architecture
 
-**Entry point** — `main.m` hosts `AppDelegate`, which builds the menu bar and bootstraps `NSDocumentController`. No XIB/NIB: all UI is constructed in code.
+Source files live in `src/` and tests in `tests/`. The vendored parser is at `src/vendor/`.
+
+**Entry point** — `src/main.m` hosts `AppDelegate`, which builds the menu bar and bootstraps `NSDocumentController`. No XIB/NIB: all UI is constructed in code.
 
 **Document layer** — `FountainDocument` (subclass of `NSDocument`) owns the window, scroll view, text view, and highlighter. It handles file I/O (`readFromData:` / `dataOfType:`), color-scheme toggling, and word-count updates in the window title.
 
@@ -31,10 +33,10 @@ There is no way to run a single test file; `make test` runs all tests via `xctes
 1. **Smart newline**: after a Character cue, sets typing attributes to Dialogue style immediately (before the async re-highlight fires).
 2. **Autocomplete**: after each insertion on an all-caps line that looks like a character cue, triggers `complete:` using `characterNamesProvider` (a block wired in by `FountainDocument`).
 
-**Vendor** — `FastFountainParser` / `FNElement` / `NSString+Regex` are third-party (nyousefi/Fountain, MIT). Do not modify them; treat them as a stable API.
+**Vendor** — `src/vendor/`: `FastFountainParser` / `FNElement` / `NSString+Regex` are third-party (nyousefi/Fountain, MIT). Do not modify them; treat them as a stable API.
 
 ## Key constraints
 
-- The page width is fixed at 612 pt (8.5" @ 72 dpi). All margin constants in `FountainHighlighter.m` are in points relative to that page width — change them there, not in paragraph-style build code scattered elsewhere.
+- The page width is fixed at 612 pt (8.5" @ 72 dpi). All margin constants in `src/FountainHighlighter.m` are in points relative to that page width — change them there, not in paragraph-style build code scattered elsewhere.
 - Highlighting is always a full-document pass (no incremental/range highlighting). The delayed-perform (`afterDelay:0.0`) in `textStorageDidProcessEditing:` coalesces rapid edits into one pass.
 - `FountainDocument` uses `pendingContent` to buffer text loaded before the window is created (the NSDocument lifecycle calls `readFromData:` before `makeWindowControllers`).

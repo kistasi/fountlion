@@ -1,6 +1,6 @@
 #import <XCTest/XCTest.h>
 #import <Cocoa/Cocoa.h>
-#import "../FountainDocument.h"
+#import "../src/FountainDocument.h"
 
 @interface FountainDocumentTests : XCTestCase
 @end

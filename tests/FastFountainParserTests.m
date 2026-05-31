@@ -1,6 +1,6 @@
 #import <XCTest/XCTest.h>
-#import "../vendor/FastFountainParser.h"
-#import "../vendor/FNElement.h"
+#import "../src/vendor/FastFountainParser.h"
+#import "../src/vendor/FNElement.h"
 
 // ---------------------------------------------------------------------------
 // Helpers

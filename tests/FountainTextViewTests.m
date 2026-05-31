@@ -1,7 +1,7 @@
 #import <XCTest/XCTest.h>
 #import <Cocoa/Cocoa.h>
-#import "../FountainTextView.h"
-#import "../FountainHighlighter.h"
+#import "../src/FountainTextView.h"
+#import "../src/FountainHighlighter.h"
 
 // Expose private methods for testing without declaring them in the public header.
 @interface FountainTextView (TestAccess)

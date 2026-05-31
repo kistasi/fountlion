@@ -90,4 +90,109 @@
     XCTAssertEqualObjects([tv string], text);
 }
 
+// ---------------------------------------------------------------------------
+// Status bar helpers
+
+- (FountainDocument *)docWithTextView:(NSString *)content {
+    FountainDocument *doc = [self freshDoc];
+    NSTextView *tv = [[NSTextView alloc] initWithFrame:NSMakeRect(0, 0, 800, 600)];
+    [tv setString:content];
+    doc.textView = tv;
+
+    doc.fileLabel = [[NSTextField alloc] initWithFrame:NSZeroRect];
+    doc.countsLabel = [[NSTextField alloc] initWithFrame:NSZeroRect];
+    return doc;
+}
+
+// ---------------------------------------------------------------------------
+// updateStatusBar
+
+- (void)test_updateStatusBar_nilFileLabel_doesNotCrash {
+    FountainDocument *doc = [self freshDoc];
+    XCTAssertNoThrow([doc updateStatusBar]);
+}
+
+- (void)test_updateStatusBar_nilTextView_showsZeroCounts {
+    FountainDocument *doc = [self freshDoc];
+    doc.fileLabel = [[NSTextField alloc] initWithFrame:NSZeroRect];
+    doc.countsLabel = [[NSTextField alloc] initWithFrame:NSZeroRect];
+    [doc updateStatusBar];
+    XCTAssertEqualObjects(doc.countsLabel.stringValue, @"0 words  0 chars");
+}
+
+- (void)test_updateStatusBar_countsMatchText {
+    FountainDocument *doc = [self docWithTextView:@"Hello world"];
+    [doc updateStatusBar];
+    XCTAssertEqualObjects(doc.countsLabel.stringValue, @"2 words  11 chars");
+}
+
+- (void)test_updateStatusBar_largeCountsFormatWithComma {
+    // 1000 repetitions of "a " = 1000 words, 2000 chars
+    NSMutableString *s = [NSMutableString string];
+    for (int i = 0; i < 1000; i++) [s appendString:@"a "];
+    FountainDocument *doc = [self docWithTextView:s];
+    [doc updateStatusBar];
+    XCTAssertEqualObjects(doc.countsLabel.stringValue, @"1,000 words  2,000 chars");
+}
+
+- (void)test_updateStatusBar_untitledDocument_showsUntitled {
+    FountainDocument *doc = [self docWithTextView:@""];
+    [doc updateStatusBar];
+    XCTAssertEqualObjects(doc.fileLabel.stringValue, @"Untitled");
+}
+
+- (void)test_updateStatusBar_withFileURL_showsAbbreviatedPath {
+    FountainDocument *doc = [self docWithTextView:@""];
+    NSString *home = NSHomeDirectory();
+    doc.fileURL = [NSURL fileURLWithPath:[home stringByAppendingPathComponent:@"script.fountain"]];
+    [doc updateStatusBar];
+    XCTAssertEqualObjects(doc.fileLabel.stringValue, @"~/script.fountain");
+}
+
+// ---------------------------------------------------------------------------
+// layoutStatusBar
+
+- (void)test_layoutStatusBar_nilStatusBar_doesNotCrash {
+    FountainDocument *doc = [self freshDoc];
+    XCTAssertNoThrow([doc layoutStatusBar]);
+}
+
+- (void)test_layoutStatusBar_framesWithKnownWidth {
+    FountainDocument *doc = [self freshDoc];
+
+    NSView *statusBar = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 500, 22)];
+    doc.statusBar = statusBar;
+
+    NSTextField *fileLabel = [[NSTextField alloc] initWithFrame:NSZeroRect];
+    NSTextField *countsLabel = [[NSTextField alloc] initWithFrame:NSZeroRect];
+    NSButton *modeButton = [[NSButton alloc] initWithFrame:NSZeroRect];
+    NSView *separatorView = [[NSView alloc] initWithFrame:NSZeroRect];
+    doc.fileLabel = fileLabel;
+    doc.countsLabel = countsLabel;
+    doc.modeButton = modeButton;
+    doc.separatorView = separatorView;
+    [statusBar addSubview:fileLabel];
+    [statusBar addSubview:countsLabel];
+    [statusBar addSubview:modeButton];
+    [statusBar addSubview:separatorView];
+
+    [doc layoutStatusBar];
+
+    // Constants from layoutStatusBar: pad=8, btnW=90, cntW=185, labelH=15, H=22
+    // btnX = 500 - 8 - 90 = 402
+    // cntX = 402 - 8 - 185 = 209
+    // fileW = 209 - 8 - 8 = 193
+    // y = floor((22 - 15) / 2) = 3
+    XCTAssertEqual(NSMinX(modeButton.frame),  402.0);
+    XCTAssertEqual(NSMinX(countsLabel.frame), 209.0);
+    XCTAssertEqual(NSWidth(countsLabel.frame), 185.0);
+    XCTAssertEqual(NSMinX(fileLabel.frame),   8.0);
+    XCTAssertEqual(NSWidth(fileLabel.frame),  193.0);
+    XCTAssertEqual(NSMinY(fileLabel.frame),   3.0);
+    // separator: full width, 1pt tall, at top of bar
+    XCTAssertEqual(NSWidth(separatorView.frame),  500.0);
+    XCTAssertEqual(NSHeight(separatorView.frame), 1.0);
+    XCTAssertEqual(NSMinY(separatorView.frame),   21.0);
+}
+
 @end

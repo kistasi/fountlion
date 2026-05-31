@@ -140,6 +140,7 @@ static const CGFloat kStatusBarHeight = 22.0;
 
 - (void)applyColorScheme {
     BOOL dark = [[NSUserDefaults standardUserDefaults] boolForKey:@"darkMode"];
+    NSColor *textColor;
     if (dark) {
         [self.textView setBackgroundColor:[NSColor colorWithCalibratedWhite:0.12 alpha:1.0]];
         [self.textView setTextColor:[NSColor colorWithCalibratedWhite:0.92 alpha:1.0]];
@@ -151,13 +152,7 @@ static const CGFloat kStatusBarHeight = 22.0;
         [self.separatorView setWantsLayer:YES];
         [self.separatorView layer].backgroundColor =
             [NSColor colorWithCalibratedWhite:0.22 alpha:1.0].CGColor;
-        NSColor *textColor = [NSColor colorWithCalibratedWhite:0.65 alpha:1.0];
-        [self.fileLabel setTextColor:textColor];
-        [self.countsLabel setTextColor:textColor];
-        [self.modeButton setAttributedTitle:
-            [[NSAttributedString alloc] initWithString:@"Dark Mode"
-                attributes:@{NSForegroundColorAttributeName: textColor,
-                             NSFontAttributeName: [NSFont systemFontOfSize:11]}]];
+        textColor = [NSColor colorWithCalibratedWhite:0.65 alpha:1.0];
     } else {
         [self.textView setBackgroundColor:[NSColor whiteColor]];
         [self.textView setTextColor:[NSColor blackColor]];
@@ -169,14 +164,14 @@ static const CGFloat kStatusBarHeight = 22.0;
         [self.separatorView setWantsLayer:YES];
         [self.separatorView layer].backgroundColor =
             [NSColor colorWithCalibratedWhite:0.75 alpha:1.0].CGColor;
-        NSColor *textColor = [NSColor colorWithCalibratedWhite:0.3 alpha:1.0];
-        [self.fileLabel setTextColor:textColor];
-        [self.countsLabel setTextColor:textColor];
-        [self.modeButton setAttributedTitle:
-            [[NSAttributedString alloc] initWithString:@"Dark Mode"
-                attributes:@{NSForegroundColorAttributeName: textColor,
-                             NSFontAttributeName: [NSFont systemFontOfSize:11]}]];
+        textColor = [NSColor colorWithCalibratedWhite:0.3 alpha:1.0];
     }
+    [self.fileLabel setTextColor:textColor];
+    [self.countsLabel setTextColor:textColor];
+    [self.modeButton setAttributedTitle:
+        [[NSAttributedString alloc] initWithString:@"Dark Mode"
+            attributes:@{NSForegroundColorAttributeName: textColor,
+                         NSFontAttributeName: [NSFont systemFontOfSize:11]}]];
     [self.modeButton setState:dark ? NSOnState : NSOffState];
     self.highlighter.darkMode = dark;
 }

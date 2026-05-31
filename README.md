@@ -6,7 +6,7 @@ A [Fountain](https://fountain.io) screenplay editor for OS X 10.7 Lion.
 
 - Syntax highlighting with standard screenplay margins (scene headings, action, character, dialogue, parenthetical, transition)
 - Character name autocomplete
-- Word count in the window title
+- Status bar with file path, word/character count, and dark mode toggle
 - Light and dark mode
 - Native `.fountain` file association
 
@@ -26,7 +26,7 @@ Fountain is a plain-text markup language for screenplays. See [fountain.io](http
 
 ## Credits
 
-The Fountain parser in `vendor/` is based on [nyousefi/Fountain](https://github.com/nyousefi/Fountain) (MIT). The rest of the code was written by [Claude Sonnet 4.6](https://claude.ai).
+The Fountain parser in `src/vendor/` is based on [nyousefi/Fountain](https://github.com/nyousefi/Fountain) (MIT). The rest of the code was written by [Claude Sonnet 4.6](https://claude.ai).
 
 ## License
 

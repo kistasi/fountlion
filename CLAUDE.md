@@ -22,7 +22,7 @@ Source files live in `src/` and tests in `tests/`. The vendored parser is at `sr
 
 **Entry point** — `src/main.m` hosts `AppDelegate`, which builds the menu bar and bootstraps `NSDocumentController`. No XIB/NIB: all UI is constructed in code.
 
-**Document layer** — `FountainDocument` (subclass of `NSDocument`) owns the window, scroll view, text view, and highlighter. It handles file I/O (`readFromData:` / `dataOfType:`), color-scheme toggling, and word-count updates in the window title.
+**Document layer** — `FountainDocument` (subclass of `NSDocument`) owns the window, scroll view, text view, highlighter, and status bar. It handles file I/O (`readFromData:` / `dataOfType:`), color-scheme toggling, and status-bar updates.
 
 **Highlighter** — `FountainHighlighter` is an `NSTextStorageDelegate`. On every edit it runs `FastFountainParser` over the full document text, maps each `FNElement` back to a character range by line index, and batch-applies `NSAttributedString` attributes (font + paragraph style + color). It also collects `characterNames` (sorted, extensions stripped) for autocomplete.
 
@@ -32,6 +32,13 @@ Source files live in `src/` and tests in `tests/`. The vendored parser is at `sr
 **Text view** — `FountainTextView` (subclass of `NSTextView`) adds two behaviors:
 1. **Smart newline**: after a Character cue, sets typing attributes to Dialogue style immediately (before the async re-highlight fires).
 2. **Autocomplete**: after each insertion on an all-caps line that looks like a character cue, triggers `complete:` using `characterNamesProvider` (a block wired in by `FountainDocument`).
+
+**Status bar** — A 22 pt strip at the bottom of the window, built entirely in `FountainDocument`. Three subviews:
+- `fileLabel` — left-aligned; shows the file path (tilde-abbreviated) or "Untitled" for unsaved documents.
+- `countsLabel` — right-aligned; shows word and character counts, comma-formatted for ≥ 1000.
+- `modeButton` — a checkbox that toggles dark mode via the responder chain (`toggleDarkMode:`).
+
+`layoutStatusBar` positions all subviews from fixed constants (pad=8, btnW=90, cntW=185). `updateStatusBar` recomputes content; both are called on window resize, file-URL changes, and text edits. Colors are set by `applyColorScheme` alongside the rest of the color scheme.
 
 **Vendor** — `src/vendor/`: `FastFountainParser` / `FNElement` / `NSString+Regex` are third-party (nyousefi/Fountain, MIT). Do not modify them; treat them as a stable API.
 

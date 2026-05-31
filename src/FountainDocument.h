@@ -8,5 +8,12 @@
 @property (strong) NSScrollView *scrollView;
 @property (strong) NSString *pendingContent;
 @property (strong) FountainHighlighter *highlighter;
+@property (strong) NSView *statusBar;
+@property (strong) NSView *separatorView;
+@property (strong) NSTextField *fileLabel;
+@property (strong) NSTextField *countsLabel;
+@property (strong) NSButton *modeButton;
 - (void)applyColorScheme;
+- (void)updateStatusBar;
+- (void)layoutStatusBar;
 @end

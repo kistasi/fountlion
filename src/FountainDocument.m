@@ -21,6 +21,7 @@ static NSString * const kNewDocumentTemplate =
 @implementation FountainDocument
 
 static const CGFloat kPageWidth = 612.0;  // 8.5" at 72 pt/in
+static const CGFloat kStatusBarHeight = 22.0;
 
 - (void)makeWindowControllers {
     NSUInteger style = NSTitledWindowMask | NSClosableWindowMask |
@@ -34,8 +35,11 @@ static const CGFloat kPageWidth = 612.0;  // 8.5" at 72 pt/in
     [window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     [window setMinSize:NSMakeSize(kPageWidth + 60, 400)];
 
-    self.scrollView =
-        [[NSScrollView alloc] initWithFrame:((NSView *)window.contentView).bounds];
+    NSRect contentBounds = ((NSView *)window.contentView).bounds;
+    NSRect scrollRect = NSMakeRect(0, kStatusBarHeight,
+                                   contentBounds.size.width,
+                                   contentBounds.size.height - kStatusBarHeight);
+    self.scrollView = [[NSScrollView alloc] initWithFrame:scrollRect];
     [self.scrollView setHasVerticalScroller:YES];
     [self.scrollView setHasHorizontalScroller:NO];
     [self.scrollView setBorderType:NSNoBorder];
@@ -65,6 +69,47 @@ static const CGFloat kPageWidth = 612.0;  // 8.5" at 72 pt/in
     [self.scrollView setDocumentView:self.textView];
     [window.contentView addSubview:self.scrollView];
 
+    // Status bar
+    NSRect statusRect = NSMakeRect(0, 0, contentBounds.size.width, kStatusBarHeight);
+    self.statusBar = [[NSView alloc] initWithFrame:statusRect];
+    [self.statusBar setAutoresizingMask:NSViewWidthSizable | NSViewMaxYMargin];
+
+    self.separatorView = [[NSView alloc] initWithFrame:NSZeroRect];
+    [self.statusBar addSubview:self.separatorView];
+
+    self.fileLabel = [[NSTextField alloc] initWithFrame:NSZeroRect];
+    [self.fileLabel setEditable:NO];
+    [self.fileLabel setSelectable:NO];
+    [self.fileLabel setBordered:NO];
+    [self.fileLabel setDrawsBackground:NO];
+    [self.fileLabel setFont:[NSFont systemFontOfSize:11]];
+    [[self.fileLabel cell] setLineBreakMode:NSLineBreakByTruncatingHead];
+    [self.statusBar addSubview:self.fileLabel];
+
+    self.countsLabel = [[NSTextField alloc] initWithFrame:NSZeroRect];
+    [self.countsLabel setEditable:NO];
+    [self.countsLabel setSelectable:NO];
+    [self.countsLabel setBordered:NO];
+    [self.countsLabel setDrawsBackground:NO];
+    [self.countsLabel setFont:[NSFont systemFontOfSize:11]];
+    [self.countsLabel setAlignment:NSRightTextAlignment];
+    [self.statusBar addSubview:self.countsLabel];
+
+    self.modeButton = [[NSButton alloc] initWithFrame:NSZeroRect];
+    [self.modeButton setButtonType:NSSwitchButton];
+    [self.modeButton setTitle:@"Dark Mode"];
+    [self.modeButton setFont:[NSFont systemFontOfSize:11]];
+    [self.modeButton setTarget:nil];
+    [self.modeButton setAction:@selector(toggleDarkMode:)];
+    [self.statusBar addSubview:self.modeButton];
+
+    [window.contentView addSubview:self.statusBar];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(windowDidResize:)
+                                                 name:NSWindowDidResizeNotification
+                                               object:window];
+
     self.highlighter = [[FountainHighlighter alloc] initWithTextView:self.textView];
 
     // Wire autocomplete source into the text view.
@@ -82,11 +127,12 @@ static const CGFloat kPageWidth = 612.0;  // 8.5" at 72 pt/in
     }
 
     [self applyColorScheme];
+    [self layoutStatusBar];
 
     NSWindowController *wc = [[NSWindowController alloc] initWithWindow:window];
     [self addWindowController:wc];
     [wc showWindow:nil];
-    [self updateWordCount];
+    [self updateStatusBar];
 }
 
 // ---------------------------------------------------------------------------
@@ -99,39 +145,101 @@ static const CGFloat kPageWidth = 612.0;  // 8.5" at 72 pt/in
         [self.textView setTextColor:[NSColor colorWithCalibratedWhite:0.92 alpha:1.0]];
         [self.textView setInsertionPointColor:[NSColor colorWithCalibratedWhite:0.9 alpha:1.0]];
         [self.scrollView setBackgroundColor:[NSColor colorWithCalibratedWhite:0.18 alpha:1.0]];
+        [self.statusBar setWantsLayer:YES];
+        [self.statusBar layer].backgroundColor =
+            [NSColor colorWithCalibratedWhite:0.15 alpha:1.0].CGColor;
+        [self.separatorView setWantsLayer:YES];
+        [self.separatorView layer].backgroundColor =
+            [NSColor colorWithCalibratedWhite:0.22 alpha:1.0].CGColor;
+        NSColor *textColor = [NSColor colorWithCalibratedWhite:0.65 alpha:1.0];
+        [self.fileLabel setTextColor:textColor];
+        [self.countsLabel setTextColor:textColor];
+        [self.modeButton setAttributedTitle:
+            [[NSAttributedString alloc] initWithString:@"Dark Mode"
+                attributes:@{NSForegroundColorAttributeName: textColor,
+                             NSFontAttributeName: [NSFont systemFontOfSize:11]}]];
     } else {
         [self.textView setBackgroundColor:[NSColor whiteColor]];
         [self.textView setTextColor:[NSColor blackColor]];
         [self.textView setInsertionPointColor:[NSColor blackColor]];
         [self.scrollView setBackgroundColor:[NSColor colorWithCalibratedWhite:0.80 alpha:1.0]];
+        [self.statusBar setWantsLayer:YES];
+        [self.statusBar layer].backgroundColor =
+            [NSColor colorWithCalibratedWhite:0.93 alpha:1.0].CGColor;
+        [self.separatorView setWantsLayer:YES];
+        [self.separatorView layer].backgroundColor =
+            [NSColor colorWithCalibratedWhite:0.75 alpha:1.0].CGColor;
+        NSColor *textColor = [NSColor colorWithCalibratedWhite:0.3 alpha:1.0];
+        [self.fileLabel setTextColor:textColor];
+        [self.countsLabel setTextColor:textColor];
+        [self.modeButton setAttributedTitle:
+            [[NSAttributedString alloc] initWithString:@"Dark Mode"
+                attributes:@{NSForegroundColorAttributeName: textColor,
+                             NSFontAttributeName: [NSFont systemFontOfSize:11]}]];
     }
+    [self.modeButton setState:dark ? NSOnState : NSOffState];
     self.highlighter.darkMode = dark;
 }
 
 // ---------------------------------------------------------------------------
-// Word count in window title
+// Status bar
 
-- (void)updateWordCount {
-    NSString *text = [self.textView string];
-    __block NSInteger count = 0;
+- (void)layoutStatusBar {
+    if (!self.statusBar) return;
+    CGFloat W = NSWidth(self.statusBar.frame);
+    CGFloat H = NSHeight(self.statusBar.frame);
+    CGFloat pad = 8.0;
+    CGFloat btnW = 90.0;
+    CGFloat cntW = 185.0;
+    CGFloat labelH = 15.0;
+    CGFloat y = floor((H - labelH) / 2.0);
+
+    CGFloat btnX = W - pad - btnW;
+    CGFloat cntX = btnX - pad - cntW;
+    CGFloat fileW = cntX - pad - pad;
+    if (fileW < 0) fileW = 0;
+
+    [self.fileLabel setFrame:NSMakeRect(pad, y, fileW, labelH)];
+    [self.countsLabel setFrame:NSMakeRect(cntX, y, cntW, labelH)];
+    [self.modeButton setFrame:NSMakeRect(btnX, y - 1, btnW, labelH + 2)];
+    [self.separatorView setFrame:NSMakeRect(0, H - 1, W, 1)];
+}
+
+- (void)updateStatusBar {
+    if (!self.fileLabel) return;
+
+    NSString *text = self.textView ? [self.textView string] : @"";
+
+    __block NSInteger wordCount = 0;
     [text enumerateSubstringsInRange:NSMakeRange(0, text.length)
                              options:NSStringEnumerationByWords
                           usingBlock:^(NSString *s, NSRange sr, NSRange er, BOOL *stop) {
         (void)s; (void)sr; (void)er; (void)stop;
-        count++;
+        wordCount++;
     }];
-    NSString *baseName = [self displayName] ?: @"Untitled";
-    NSString *countStr;
-    if (count >= 1000) {
-        countStr = [NSString stringWithFormat:@"%ld,%03ld",
-                    (long)(count / 1000), (long)(count % 1000)];
-    } else {
-        countStr = [NSString stringWithFormat:@"%ld", (long)count];
-    }
-    NSString *title = [NSString stringWithFormat:@"%@ — %@ words", baseName, countStr];
-    for (NSWindowController *wc in self.windowControllers) {
-        [wc.window setTitle:title];
-    }
+    NSInteger charCount = (NSInteger)text.length;
+
+    NSString *(^fmt)(NSInteger) = ^(NSInteger n) {
+        if (n >= 1000)
+            return [NSString stringWithFormat:@"%ld,%03ld",
+                    (long)(n / 1000), (long)(n % 1000)];
+        return [NSString stringWithFormat:@"%ld", (long)n];
+    };
+    [self.countsLabel setStringValue:
+        [NSString stringWithFormat:@"%@ words  %@ chars", fmt(wordCount), fmt(charCount)]];
+
+    NSURL *url = self.fileURL;
+    NSString *pathStr = url ? [url.path stringByAbbreviatingWithTildeInPath] : @"Untitled";
+    [self.fileLabel setStringValue:pathStr];
+}
+
+- (void)windowDidResize:(NSNotification *)notification {
+    [self layoutStatusBar];
+}
+
+- (void)setFileURL:(NSURL *)fileURL {
+    [super setFileURL:fileURL];
+    [self updateStatusBar];
 }
 
 // ---------------------------------------------------------------------------
@@ -163,7 +271,11 @@ static const CGFloat kPageWidth = 612.0;  // 8.5" at 72 pt/in
 
 - (void)textDidChange:(NSNotification *)notification {
     [self updateChangeCount:NSChangeDone];
-    [self updateWordCount];
+    [self updateStatusBar];
+}
+
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 @end

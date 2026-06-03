@@ -2,18 +2,18 @@
 #import "vendor/FastFountainParser.h"
 #import "vendor/FNElement.h"
 
-// Screenplay margins in points (72 pt = 1 inch).
-// Shared by buildParaStyles and elementTypeAtCharOffset: — change here, not both.
-static const CGFloat kIndentBody          = 108.0;   // 1.5"
-static const CGFloat kTailBody            = -72.0;   // 1.0" from right
-static const CGFloat kIndentCharacter     = 252.0;   // 3.5"
-static const CGFloat kIndentDialogue      = 180.0;   // 2.5"
-static const CGFloat kTailDialogue        = -180.0;  // 2.5" from right
-static const CGFloat kIndentParenthetical = 216.0;   // 3.0"
+// Proportional screenplay margins relative to a standard 612-pt page.
+static const CGFloat kFracIndentBody          = 108.0 / 612.0;
+static const CGFloat kFracTailBody            =  72.0 / 612.0;  // magnitude; applied as negative
+static const CGFloat kFracIndentCharacter     = 252.0 / 612.0;
+static const CGFloat kFracIndentDialogue      = 180.0 / 612.0;
+static const CGFloat kFracTailDialogue        = 180.0 / 612.0;  // magnitude; applied as negative
+static const CGFloat kFracIndentParenthetical = 216.0 / 612.0;
 
 @implementation FountainHighlighter {
     NSTextView         *_textView;
     BOOL                _darkMode;
+    CGFloat             _containerWidth;
     NSArray            *_characterNames;
     // Cached fonts — same for both color schemes.
     NSFont             *_fontRegular;
@@ -23,23 +23,30 @@ static const CGFloat kIndentParenthetical = 216.0;   // 3.0"
     NSColor            *_colorText;
     NSColor            *_colorGray;
     NSColor            *_colorAccent;
-    // Paragraph styles — constant (independent of color scheme).
+    // Paragraph styles — rebuilt when containerWidth changes.
     NSParagraphStyle   *_paraBody;
     NSParagraphStyle   *_paraCharacter;
     NSParagraphStyle   *_paraDialogue;
     NSParagraphStyle   *_paraParenthetical;
     NSParagraphStyle   *_paraTransition;
     NSParagraphStyle   *_paraCenter;
+    // Scaled indent values — set by buildParaStyles, read by elementTypeAtCharOffset:.
+    CGFloat             _indentBody;
+    CGFloat             _indentCharacter;
+    CGFloat             _indentDialogue;
+    CGFloat             _indentParenthetical;
 }
 
 @synthesize characterNames = _characterNames;
 @synthesize darkMode = _darkMode;
+@synthesize containerWidth = _containerWidth;
 
 - (instancetype)initWithTextView:(NSTextView *)textView {
     self = [super init];
     if (self) {
         _textView = textView;
         _characterNames = @[];
+        _containerWidth = 612.0;
         [self buildCachedResources];
         [textView.textStorage setDelegate:self];
         [self highlightAll];
@@ -51,6 +58,13 @@ static const CGFloat kIndentParenthetical = 216.0;   // 3.0"
     if (_darkMode == darkMode) return;
     _darkMode = darkMode;
     [self buildColors];
+    [self highlightAll];
+}
+
+- (void)setContainerWidth:(CGFloat)containerWidth {
+    if (_containerWidth == containerWidth) return;
+    _containerWidth = containerWidth;
+    [self buildParaStyles];
     [self highlightAll];
 }
 
@@ -75,36 +89,41 @@ static const CGFloat kIndentParenthetical = 216.0;   // 3.0"
 }
 
 - (void)buildParaStyles {
-    // Standard screenplay margins (72 pt = 1 inch).
-    // All head/tail indents are absolute offsets from the left edge of the 612-pt page.
+    CGFloat W = _containerWidth;
+    _indentBody          = floor(W * kFracIndentBody);
+    CGFloat tailBody     = -floor(W * kFracTailBody);
+    _indentCharacter     = floor(W * kFracIndentCharacter);
+    _indentDialogue      = floor(W * kFracIndentDialogue);
+    CGFloat tailDialogue = -floor(W * kFracTailDialogue);
+    _indentParenthetical = floor(W * kFracIndentParenthetical);
 
     NSMutableParagraphStyle *body = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-    body.firstLineHeadIndent = kIndentBody;
-    body.headIndent          = kIndentBody;
-    body.tailIndent          = kTailBody;
+    body.firstLineHeadIndent = _indentBody;
+    body.headIndent          = _indentBody;
+    body.tailIndent          = tailBody;
     _paraBody = [body copy];
 
     NSMutableParagraphStyle *character = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-    character.firstLineHeadIndent = kIndentCharacter;
-    character.headIndent          = kIndentCharacter;
+    character.firstLineHeadIndent = _indentCharacter;
+    character.headIndent          = _indentCharacter;
     _paraCharacter = [character copy];
 
     NSMutableParagraphStyle *dialogue = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-    dialogue.firstLineHeadIndent = kIndentDialogue;
-    dialogue.headIndent          = kIndentDialogue;
-    dialogue.tailIndent          = kTailDialogue;
+    dialogue.firstLineHeadIndent = _indentDialogue;
+    dialogue.headIndent          = _indentDialogue;
+    dialogue.tailIndent          = tailDialogue;
     _paraDialogue = [dialogue copy];
 
     NSMutableParagraphStyle *paren = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-    paren.firstLineHeadIndent = kIndentParenthetical;
-    paren.headIndent          = kIndentParenthetical;
-    paren.tailIndent          = kTailDialogue;
+    paren.firstLineHeadIndent = _indentParenthetical;
+    paren.headIndent          = _indentParenthetical;
+    paren.tailIndent          = tailDialogue;
     _paraParenthetical = [paren copy];
 
     NSMutableParagraphStyle *transition = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
     transition.alignment  = NSRightTextAlignment;
-    transition.headIndent = kIndentBody;
-    transition.tailIndent = kTailBody;
+    transition.headIndent = _indentBody;
+    transition.tailIndent = tailBody;
     _paraTransition = [transition copy];
 
     NSMutableParagraphStyle *center = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
@@ -206,9 +225,9 @@ static const CGFloat kIndentParenthetical = 216.0;   // 3.0"
                             effectiveRange:nil];
     if (!para) return @"Action";
     CGFloat hi = para.headIndent;
-    if (hi == kIndentCharacter)     return @"Character";
-    if (hi == kIndentDialogue)      return @"Dialogue";
-    if (hi == kIndentParenthetical) return @"Parenthetical";
+    if (hi == _indentCharacter)     return @"Character";
+    if (hi == _indentDialogue)      return @"Dialogue";
+    if (hi == _indentParenthetical) return @"Parenthetical";
     return @"Action";
 }
 

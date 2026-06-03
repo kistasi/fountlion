@@ -231,6 +231,7 @@ static const CGFloat kStatusBarHeight = 22.0;
     CGFloat hInset = floor((W - containerW) / 2.0);
     [[self.textView textContainer] setContainerSize:NSMakeSize(containerW, FLT_MAX)];
     [self.textView setTextContainerInset:NSMakeSize(hInset, 20)];
+    self.highlighter.containerWidth = containerW;
 }
 
 - (void)windowDidResize:(NSNotification *)notification {

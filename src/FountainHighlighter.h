@@ -15,4 +15,7 @@
 
 // Toggle dark-mode color scheme; triggers a full re-highlight.
 @property (nonatomic) BOOL darkMode;
+
+// Current text-container width in points; triggers a para-style rebuild and re-highlight.
+@property (nonatomic) CGFloat containerWidth;
 @end

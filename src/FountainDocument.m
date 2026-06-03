@@ -47,8 +47,8 @@ static const CGFloat kStatusBarHeight = 22.0;
     [self.scrollView setDrawsBackground:YES];
 
     NSSize cs = self.scrollView.contentSize;
-    CGFloat hInset = floor((cs.width - kPageWidth) / 2.0);
-    if (hInset < 0) hInset = 0;
+    CGFloat containerW = floor(cs.width * 0.7);
+    CGFloat hInset = floor((cs.width - containerW) / 2.0);
 
     self.textView =
         [[FountainTextView alloc] initWithFrame:NSMakeRect(0, 0, cs.width, cs.height)];
@@ -58,7 +58,7 @@ static const CGFloat kStatusBarHeight = 22.0;
     [self.textView setHorizontallyResizable:NO];
     [self.textView setAutoresizingMask:NSViewWidthSizable];
     [[self.textView textContainer] setWidthTracksTextView:NO];
-    [[self.textView textContainer] setContainerSize:NSMakeSize(kPageWidth, FLT_MAX)];
+    [[self.textView textContainer] setContainerSize:NSMakeSize(containerW, FLT_MAX)];
     [self.textView setTextContainerInset:NSMakeSize(hInset, 20)];
 
     [self.textView setFont:[NSFont fontWithName:@"Courier" size:12]];
@@ -227,8 +227,9 @@ static const CGFloat kStatusBarHeight = 22.0;
 - (void)centerTextView {
     if (!self.textView) return;
     CGFloat W = self.scrollView.contentSize.width;
-    CGFloat hInset = floor((W - kPageWidth) / 2.0);
-    if (hInset < 0) hInset = 0;
+    CGFloat containerW = floor(W * 0.7);
+    CGFloat hInset = floor((W - containerW) / 2.0);
+    [[self.textView textContainer] setContainerSize:NSMakeSize(containerW, FLT_MAX)];
     [self.textView setTextContainerInset:NSMakeSize(hInset, 20)];
 }
 

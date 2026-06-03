@@ -104,7 +104,7 @@ static const CGFloat kStatusBarHeight = 22.0;
     [self.statusBar addSubview:self.modeButton];
 
     self.fontSizePopup = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
-    [self.fontSizePopup setControlSize:NSSmallControlSize];
+    [[self.fontSizePopup cell] setControlSize:NSSmallControlSize];
     [self.fontSizePopup setFont:[NSFont systemFontOfSize:11]];
     for (NSNumber *pt in @[@10, @11, @12, @13, @14, @16, @18, @20, @24]) {
         [self.fontSizePopup addItemWithTitle:[NSString stringWithFormat:@"%ld pt", (long)pt.integerValue]];

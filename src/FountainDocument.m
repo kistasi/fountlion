@@ -227,6 +227,15 @@ static const CGFloat kStatusBarHeight = 22.0;
 - (void)centerTextView {
     if (!self.textView) return;
     CGFloat W = self.scrollView.contentSize.width;
+
+    // Explicitly match the text view frame to the clip view so the inset
+    // is always symmetric regardless of whether autoresizing fired.
+    NSRect tvFrame = self.textView.frame;
+    if (tvFrame.size.width != W) {
+        tvFrame.size.width = W;
+        [self.textView setFrame:tvFrame];
+    }
+
     CGFloat containerW = floor(W * 0.7);
     CGFloat hInset = floor((W - containerW) / 2.0);
     [[self.textView textContainer] setContainerSize:NSMakeSize(containerW, FLT_MAX)];

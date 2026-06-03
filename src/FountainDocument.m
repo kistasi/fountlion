@@ -47,19 +47,19 @@ static const CGFloat kStatusBarHeight = 22.0;
     [self.scrollView setDrawsBackground:YES];
 
     NSSize cs = self.scrollView.contentSize;
-    CGFloat pageX = floor((cs.width - kPageWidth) / 2.0);
-    if (pageX < 0) pageX = 0;
+    CGFloat hInset = floor((cs.width - kPageWidth) / 2.0);
+    if (hInset < 0) hInset = 0;
 
     self.textView =
-        [[FountainTextView alloc] initWithFrame:NSMakeRect(pageX, 0, kPageWidth, cs.height)];
-    [self.textView setMinSize:NSMakeSize(kPageWidth, cs.height)];
-    [self.textView setMaxSize:NSMakeSize(kPageWidth, FLT_MAX)];
+        [[FountainTextView alloc] initWithFrame:NSMakeRect(0, 0, cs.width, cs.height)];
+    [self.textView setMinSize:NSMakeSize(0, cs.height)];
+    [self.textView setMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
     [self.textView setVerticallyResizable:YES];
     [self.textView setHorizontallyResizable:NO];
-    [self.textView setAutoresizingMask:NSViewMinXMargin | NSViewMaxXMargin];
-    [[self.textView textContainer] setWidthTracksTextView:YES];
+    [self.textView setAutoresizingMask:NSViewWidthSizable];
+    [[self.textView textContainer] setWidthTracksTextView:NO];
     [[self.textView textContainer] setContainerSize:NSMakeSize(kPageWidth, FLT_MAX)];
-    [self.textView setTextContainerInset:NSMakeSize(0, 20)];
+    [self.textView setTextContainerInset:NSMakeSize(hInset, 20)];
 
     [self.textView setFont:[NSFont fontWithName:@"Courier" size:12]];
     [self.textView setAllowsUndo:YES];
@@ -224,8 +224,17 @@ static const CGFloat kStatusBarHeight = 22.0;
     [self.fileLabel setStringValue:pathStr];
 }
 
+- (void)centerTextView {
+    if (!self.textView) return;
+    CGFloat W = self.scrollView.contentSize.width;
+    CGFloat hInset = floor((W - kPageWidth) / 2.0);
+    if (hInset < 0) hInset = 0;
+    [self.textView setTextContainerInset:NSMakeSize(hInset, 20)];
+}
+
 - (void)windowDidResize:(NSNotification *)notification {
     [self layoutStatusBar];
+    [self centerTextView];
 }
 
 - (void)setFileURL:(NSURL *)fileURL {

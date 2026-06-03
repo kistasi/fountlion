@@ -166,29 +166,36 @@
     NSTextField *fileLabel = [[NSTextField alloc] initWithFrame:NSZeroRect];
     NSTextField *countsLabel = [[NSTextField alloc] initWithFrame:NSZeroRect];
     NSButton *modeButton = [[NSButton alloc] initWithFrame:NSZeroRect];
+    NSPopUpButton *fontSizePopup = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
     NSView *separatorView = [[NSView alloc] initWithFrame:NSZeroRect];
     doc.fileLabel = fileLabel;
     doc.countsLabel = countsLabel;
     doc.modeButton = modeButton;
+    doc.fontSizePopup = fontSizePopup;
     doc.separatorView = separatorView;
     [statusBar addSubview:fileLabel];
     [statusBar addSubview:countsLabel];
     [statusBar addSubview:modeButton];
+    [statusBar addSubview:fontSizePopup];
     [statusBar addSubview:separatorView];
 
     [doc layoutStatusBar];
 
-    // Constants from layoutStatusBar: pad=8, btnW=90, cntW=185, labelH=15, H=22
+    // Constants from layoutStatusBar: pad=8, btnW=90, popW=62, cntW=185, labelH=15, H=22
     // btnX = 500 - 8 - 90 = 402
-    // cntX = 402 - 8 - 185 = 209
-    // fileW = 209 - 8 - 8 = 193
-    // y = floor((22 - 15) / 2) = 3
-    XCTAssertEqual(NSMinX(modeButton.frame),  402.0);
-    XCTAssertEqual(NSMinX(countsLabel.frame), 209.0);
-    XCTAssertEqual(NSWidth(countsLabel.frame), 185.0);
-    XCTAssertEqual(NSMinX(fileLabel.frame),   8.0);
-    XCTAssertEqual(NSWidth(fileLabel.frame),  193.0);
-    XCTAssertEqual(NSMinY(fileLabel.frame),   3.0);
+    // popX = 402 - 8 - 62 = 332
+    // cntX = 332 - 8 - 185 = 139
+    // fileW = 139 - 8 - 8 = 123
+    // y = floor((22 - 15) / 2) = 3,  popY = floor((22 - 18) / 2) = 2
+    XCTAssertEqual(NSMinX(modeButton.frame),    402.0);
+    XCTAssertEqual(NSMinX(fontSizePopup.frame), 332.0);
+    XCTAssertEqual(NSWidth(fontSizePopup.frame), 62.0);
+    XCTAssertEqual(NSMinY(fontSizePopup.frame),   2.0);
+    XCTAssertEqual(NSMinX(countsLabel.frame),   139.0);
+    XCTAssertEqual(NSWidth(countsLabel.frame),  185.0);
+    XCTAssertEqual(NSMinX(fileLabel.frame),       8.0);
+    XCTAssertEqual(NSWidth(fileLabel.frame),    123.0);
+    XCTAssertEqual(NSMinY(fileLabel.frame),       3.0);
     // separator: full width, 1pt tall, at top of bar
     XCTAssertEqual(NSWidth(separatorView.frame),  500.0);
     XCTAssertEqual(NSHeight(separatorView.frame), 1.0);

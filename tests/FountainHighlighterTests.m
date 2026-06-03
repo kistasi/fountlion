@@ -184,6 +184,67 @@ static NSString * const kScript = @"INT. OFFICE - DAY\n\nJOHN\nHello.";
     XCTAssertEqualObjects(type, @"Action");
 }
 
+- (void)test_elementTypeAtCharOffset_parenthetical {
+    NSString *script = @"INT. X - DAY\n\nJOHN\n(quietly)\nShhh.";
+    [self.textView setString:script];
+    [self.highlighter highlightAll];
+    // Pass an offset inside the parenthetical word itself (not at its very start, since
+    // NSTextStorage extends paragraph style attributes to the paragraph separator so the
+    // '\n' preceding "(quietly)" inherits the Character style).
+    NSUInteger offset = [script rangeOfString:@"quietly"].location;
+    NSString *type = [self.highlighter elementTypeAtCharOffset:offset];
+    XCTAssertEqualObjects(type, @"Parenthetical");
+}
+
+- (void)test_sceneHeadingRanges_populatedAfterHighlight {
+    // kScript: "INT. OFFICE - DAY" at offset 0, length 17
+    [self.textView setString:kScript];
+    [self.highlighter highlightAll];
+    NSArray *ranges = self.highlighter.sceneHeadingRanges;
+    XCTAssertEqual(ranges.count, (NSUInteger)1);
+    NSRange r = [[ranges firstObject] rangeValue];
+    XCTAssertEqual(r.location, (NSUInteger)0);
+    XCTAssertEqual(r.length, [@"INT. OFFICE - DAY" length]);
+}
+
+- (void)test_sceneHeadingRanges_emptyWhenNoSceneHeadings {
+    [self.textView setString:@"Just an action line."];
+    [self.highlighter highlightAll];
+    XCTAssertEqual(self.highlighter.sceneHeadingRanges.count, (NSUInteger)0);
+}
+
+- (void)test_sceneHeadingRanges_multipleScenes {
+    NSString *script = @"INT. A - DAY\n\nAction.\n\nEXT. B - NIGHT\n\nMore action.";
+    [self.textView setString:script];
+    [self.highlighter highlightAll];
+    XCTAssertEqual(self.highlighter.sceneHeadingRanges.count, (NSUInteger)2);
+}
+
+- (void)test_setContainerWidth_rebuildsCharacterIndent {
+    // Default containerWidth=612 → floor(612 * 252/612) = 252
+    NSParagraphStyle *p1 = [self.highlighter attrsForType:@"Character" centered:NO][NSParagraphStyleAttributeName];
+    XCTAssertEqualWithAccuracy(p1.headIndent, 252.0, 0.5);
+
+    // New width 1000 → floor(1000 * 252/612) = 411
+    self.highlighter.containerWidth = 1000.0;
+    NSParagraphStyle *p2 = [self.highlighter attrsForType:@"Character" centered:NO][NSParagraphStyleAttributeName];
+    XCTAssertEqualWithAccuracy(p2.headIndent, 411.0, 0.5);
+}
+
+- (void)test_setFontSize_rebuildsFontToNewSize {
+    self.highlighter.fontSize = 18.0;
+    NSFont *font = [self.highlighter attrsForType:@"Action" centered:NO][NSFontAttributeName];
+    XCTAssertEqualWithAccuracy(font.pointSize, 18.0, 0.01);
+}
+
+- (void)test_setFontSize_noChangeSkipsRebuild {
+    // Setting the same size should not crash and leave things unchanged.
+    CGFloat original = self.highlighter.fontSize;
+    XCTAssertNoThrow(self.highlighter.fontSize = original);
+    NSFont *font = [self.highlighter attrsForType:@"Action" centered:NO][NSFontAttributeName];
+    XCTAssertEqualWithAccuracy(font.pointSize, original, 0.01);
+}
+
 - (void)test_darkMode_sectionHeading_colorChanges {
     NSString *script = @"# ACT ONE";
     [self.textView setString:script];

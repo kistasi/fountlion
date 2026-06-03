@@ -73,6 +73,34 @@
 }
 
 // ===========================================================================
+// MARK: - insertNewline: smart continuation
+// ===========================================================================
+
+- (void)test_insertNewline_afterCharacterCue_setsDialogueTypingAttributes {
+    // Cursor at end of "JOHN" (a Character cue); newline should land in Dialogue style.
+    NSString *script = @"INT. X - DAY\n\nJOHN";
+    [self.textView setString:script];
+    [self.highlighter highlightAll];
+    [self.textView setSelectedRange:NSMakeRange(script.length, 0)];
+    [self.textView insertNewline:nil];
+    NSParagraphStyle *p = self.textView.typingAttributes[NSParagraphStyleAttributeName];
+    // Dialogue headIndent = floor(612 * 180/612) = 180 pt (default containerWidth 612)
+    XCTAssertEqualWithAccuracy(p.headIndent, 180.0, 0.5);
+}
+
+- (void)test_insertNewline_afterActionLine_doesNotChangeTypingAttributes {
+    // Cursor at end of an action line — no special Dialogue indent should be set.
+    NSString *script = @"John walks in.";
+    [self.textView setString:script];
+    [self.highlighter highlightAll];
+    [self.textView setSelectedRange:NSMakeRange(script.length, 0)];
+    [self.textView insertNewline:nil];
+    NSParagraphStyle *p = self.textView.typingAttributes[NSParagraphStyleAttributeName];
+    // Action headIndent = floor(612 * 72/612) = 72 pt; definitely not 180.
+    XCTAssertNotEqualWithAccuracy(p.headIndent, 180.0, 0.5);
+}
+
+// ===========================================================================
 // MARK: - completionsForPartialWordRange:
 // ===========================================================================
 

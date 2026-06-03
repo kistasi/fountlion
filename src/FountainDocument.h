@@ -13,6 +13,8 @@
 @property (strong) NSTextField *fileLabel;
 @property (strong) NSTextField *countsLabel;
 @property (strong) NSButton *modeButton;
+@property (strong) NSView *leftBorderView;
+@property (strong) NSView *rightBorderView;
 - (void)applyColorScheme;
 - (void)updateStatusBar;
 - (void)layoutStatusBar;

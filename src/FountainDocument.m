@@ -105,6 +105,16 @@ static const CGFloat kStatusBarHeight = 22.0;
 
     [window.contentView addSubview:self.statusBar];
 
+    self.leftBorderView = [[NSView alloc] initWithFrame:NSZeroRect];
+    [self.leftBorderView setWantsLayer:YES];
+    [self.leftBorderView setAutoresizingMask:NSViewNotSizable];
+    [window.contentView addSubview:self.leftBorderView];
+
+    self.rightBorderView = [[NSView alloc] initWithFrame:NSZeroRect];
+    [self.rightBorderView setWantsLayer:YES];
+    [self.rightBorderView setAutoresizingMask:NSViewNotSizable];
+    [window.contentView addSubview:self.rightBorderView];
+
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(windowDidResize:)
                                                  name:NSWindowDidResizeNotification
@@ -128,6 +138,7 @@ static const CGFloat kStatusBarHeight = 22.0;
 
     [self applyColorScheme];
     [self layoutStatusBar];
+    [self centerTextView];
 
     NSWindowController *wc = [[NSWindowController alloc] initWithWindow:window];
     [self addWindowController:wc];
@@ -170,6 +181,13 @@ static const CGFloat kStatusBarHeight = 22.0;
                          NSFontAttributeName: [NSFont systemFontOfSize:11]}]];
     [self.modeButton setState:dark ? NSOnState : NSOffState];
     self.highlighter.darkMode = dark;
+    if (self.leftBorderView) {
+        CGColorRef borderColor = dark ? CGColorCreateGenericGray(0.32, 1.0)
+                                      : CGColorCreateGenericGray(0.72, 1.0);
+        self.leftBorderView.layer.backgroundColor  = borderColor;
+        self.rightBorderView.layer.backgroundColor = borderColor;
+        CGColorRelease(borderColor);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -241,6 +259,12 @@ static const CGFloat kStatusBarHeight = 22.0;
     [[self.textView textContainer] setContainerSize:NSMakeSize(containerW, FLT_MAX)];
     [self.textView setTextContainerInset:NSMakeSize(hInset, 20)];
     self.highlighter.containerWidth = containerW;
+
+    if (self.leftBorderView) {
+        NSRect sv = self.scrollView.frame;
+        [self.leftBorderView  setFrame:NSMakeRect(hInset,              NSMinY(sv), 1, NSHeight(sv))];
+        [self.rightBorderView setFrame:NSMakeRect(hInset + containerW, NSMinY(sv), 1, NSHeight(sv))];
+    }
 }
 
 - (void)windowDidResize:(NSNotification *)notification {

@@ -18,20 +18,26 @@ static const CGFloat kPageHeight = 792.0;  // US letter at 72 pt/in
     if (!sceneRanges.count) return;
 
     NSLayoutManager *lm = self.layoutManager;
-    NSTextContainer *tc = self.textContainer;
-    NSPoint origin      = self.textContainerOrigin;
-    CGFloat containerW  = tc.containerSize.width;
-    NSUInteger totalLen = self.textStorage.length;
-    NSFont  *font       = self.font ?: [NSFont fontWithName:@"Courier" size:12];
-    NSColor *color      = self.textColor ?: [NSColor grayColor];
+    NSTextContainer *tc  = self.textContainer;
 
-    NSMutableParagraphStyle *rightPS = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-    rightPS.alignment = NSRightTextAlignment;
-    NSDictionary *leftAttrs  = @{ NSFontAttributeName: font,
-                                   NSForegroundColorAttributeName: color };
-    NSDictionary *rightAttrs = @{ NSFontAttributeName: font,
-                                   NSForegroundColorAttributeName: color,
-                                   NSParagraphStyleAttributeName: [rightPS copy] };
+    // Ensure the layout manager has generated layout for the full container so
+    // that line-fragment rects are valid even for off-screen scene headings
+    // (needed for correct page-number sequencing).
+    [lm ensureLayoutForTextContainer:tc];
+
+    // [super drawRect:] may leave an arbitrary clip rect.  Reset it to the
+    // full view bounds so our margin drawing is not silently discarded.
+    NSGraphicsContext *ctx = [NSGraphicsContext currentContext];
+    [ctx saveGraphicsState];
+    [[NSBezierPath bezierPathWithRect:self.bounds] setClip];
+
+    NSPoint    origin     = self.textContainerOrigin;
+    CGFloat    containerW = tc.containerSize.width;
+    NSUInteger totalLen   = self.textStorage.length;
+    NSFont    *font       = self.font ?: [NSFont fontWithName:@"Courier" size:12];
+    NSColor   *color      = self.textColor ?: [NSColor grayColor];
+    NSDictionary *attrs   = @{ NSFontAttributeName: font,
+                                NSForegroundColorAttributeName: color };
 
     NSUInteger lastPage = 0;
 
@@ -44,25 +50,28 @@ static const CGFloat kPageHeight = 792.0;  // US letter at 72 pt/in
 
         NSRect  lr = [lm lineFragmentRectForGlyphAtIndex:gr.location effectiveRange:nil];
         CGFloat vy = origin.y + lr.origin.y;
-        CGFloat h  = lr.size.height;
 
         // Scene number — right-aligned flush against the container's left edge
-        NSString *numStr  = [NSString stringWithFormat:@"%lu", (unsigned long)(i + 1)];
-        CGFloat   marginW = origin.x - 10.0;
-        if (marginW > 0)
-            [numStr drawInRect:NSMakeRect(0, vy, marginW, h) withAttributes:rightAttrs];
+        CGFloat marginW = origin.x - 10.0;
+        if (marginW > 0) {
+            NSString *numStr = [NSString stringWithFormat:@"%lu", (unsigned long)(i + 1)];
+            NSSize    numSz  = [numStr sizeWithAttributes:attrs];
+            [numStr drawAtPoint:NSMakePoint(origin.x - 10.0 - numSz.width, vy)
+                 withAttributes:attrs];
+        }
 
         // Page number — only on the first scene heading of each new page
         NSUInteger page = (NSUInteger)floor(lr.origin.y / kPageHeight) + 1;
         if (page > lastPage) {
             lastPage = page;
             NSString *pgStr = [NSString stringWithFormat:@"%lu.", (unsigned long)page];
-            CGFloat   pgX   = origin.x + containerW + 10.0;
-            CGFloat   pgW   = NSWidth(self.frame) - pgX;
-            if (pgW > 0)
-                [pgStr drawInRect:NSMakeRect(pgX, vy, pgW, h) withAttributes:leftAttrs];
+            CGFloat    pgX  = origin.x + containerW + 10.0;
+            if (pgX < NSWidth(self.frame))
+                [pgStr drawAtPoint:NSMakePoint(pgX, vy) withAttributes:attrs];
         }
     }
+
+    [ctx restoreGraphicsState];
 }
 
 // ---------------------------------------------------------------------------

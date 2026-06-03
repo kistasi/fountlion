@@ -5,9 +5,13 @@ A [Fountain](https://fountain.io) screenplay editor for OS X 10.7 Lion.
 ## Features
 
 - Syntax highlighting with standard screenplay margins (scene headings, action, character, dialogue, parenthetical, transition)
+- Scene numbers in the left margin and page numbers in the right margin
+- Bordered text column (left/right rules) that recenters on window resize
 - Character name autocomplete
-- Status bar with file path, word/character count, and dark mode toggle
-- Light and dark mode
+- Status bar with file path, word/character count, font size picker (10–24 pt), and dark mode toggle
+- Light and dark mode (persisted across launches)
+- Find panel (Cmd+F, Cmd+G)
+- New documents open with a Fountain title-page template
 - Native `.fountain` file association
 
 ## Build

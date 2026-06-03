@@ -16,6 +16,7 @@ static const CGFloat kFracIndentParenthetical = 216.0 / 612.0;
     CGFloat             _containerWidth;
     CGFloat             _fontSize;
     NSArray            *_characterNames;
+    NSArray            *_sceneHeadingRanges;
     // Cached fonts — rebuilt when fontSize changes.
     NSFont             *_fontRegular;
     NSFont             *_fontBold;
@@ -39,6 +40,7 @@ static const CGFloat kFracIndentParenthetical = 216.0 / 612.0;
 }
 
 @synthesize characterNames = _characterNames;
+@synthesize sceneHeadingRanges = _sceneHeadingRanges;
 @synthesize darkMode = _darkMode;
 @synthesize containerWidth = _containerWidth;
 @synthesize fontSize = _fontSize;
@@ -169,14 +171,14 @@ static const CGFloat kFracIndentParenthetical = 216.0 / 612.0;
     [ts setAttributes:[self attrsForType:@"Action" centered:NO]
                 range:NSMakeRange(0, len)];
 
-    if (len == 0) { [ts endEditing]; return; }
+    if (len == 0) { [ts endEditing]; _sceneHeadingRanges = @[]; return; }
 
     FastFountainParser *parser = [[FastFountainParser alloc] initWithString:text];
     NSArray *elements = parser.elements;
-    if (!elements.count) { [ts endEditing]; return; }
+    if (!elements.count) { [ts endEditing]; _sceneHeadingRanges = @[]; return; }
 
-    // Collect character names while iterating elements.
-    NSMutableSet *names = [NSMutableSet set];
+    NSMutableSet   *names       = [NSMutableSet set];
+    NSMutableArray *sceneRanges = [NSMutableArray array];
 
     NSArray *lines = [text componentsSeparatedByString:@"\n"];
     NSMutableArray *offsets = [NSMutableArray arrayWithCapacity:lines.count];
@@ -206,6 +208,10 @@ static const CGFloat kFracIndentParenthetical = 216.0 / 612.0;
                         range:NSMakeRange(startOff, endOff - startOff)];
         }
 
+        if ([el.elementType isEqualToString:@"Scene Heading"] && startOff <= endOff && endOff <= len) {
+            [sceneRanges addObject:[NSValue valueWithRange:NSMakeRange(startOff, endOff - startOff)]];
+        }
+
         if ([el.elementType isEqualToString:@"Character"]) {
             NSString *name = [el.elementText stringByTrimmingCharactersInSet:
                 [NSCharacterSet whitespaceAndNewlineCharacterSet]];
@@ -224,7 +230,9 @@ static const CGFloat kFracIndentParenthetical = 216.0 / 612.0;
 
     [ts endEditing];
 
-    _characterNames = [[names allObjects] sortedArrayUsingSelector:@selector(compare:)];
+    _characterNames    = [[names allObjects] sortedArrayUsingSelector:@selector(compare:)];
+    _sceneHeadingRanges = [sceneRanges copy];
+    [_textView setNeedsDisplay:YES];
 }
 
 // ---------------------------------------------------------------------------

@@ -13,6 +13,9 @@
 // Updated after each highlight pass; used for character-name autocomplete.
 @property (readonly) NSArray *characterNames;
 
+// Character ranges of scene headings in document order; updated after each highlight pass.
+@property (readonly) NSArray *sceneHeadingRanges;
+
 // Toggle dark-mode color scheme; triggers a full re-highlight.
 @property (nonatomic) BOOL darkMode;
 

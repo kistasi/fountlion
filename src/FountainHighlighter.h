@@ -18,4 +18,7 @@
 
 // Current text-container width in points; triggers a para-style rebuild and re-highlight.
 @property (nonatomic) CGFloat containerWidth;
+
+// Font size in points (default 12); triggers a font rebuild and re-highlight.
+@property (nonatomic) CGFloat fontSize;
 @end

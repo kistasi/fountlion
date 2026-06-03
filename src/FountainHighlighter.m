@@ -14,8 +14,9 @@ static const CGFloat kFracIndentParenthetical = 216.0 / 612.0;
     NSTextView         *_textView;
     BOOL                _darkMode;
     CGFloat             _containerWidth;
+    CGFloat             _fontSize;
     NSArray            *_characterNames;
-    // Cached fonts — same for both color schemes.
+    // Cached fonts — rebuilt when fontSize changes.
     NSFont             *_fontRegular;
     NSFont             *_fontBold;
     NSFont             *_fontOblique;
@@ -40,6 +41,7 @@ static const CGFloat kFracIndentParenthetical = 216.0 / 612.0;
 @synthesize characterNames = _characterNames;
 @synthesize darkMode = _darkMode;
 @synthesize containerWidth = _containerWidth;
+@synthesize fontSize = _fontSize;
 
 - (instancetype)initWithTextView:(NSTextView *)textView {
     self = [super init];
@@ -47,6 +49,7 @@ static const CGFloat kFracIndentParenthetical = 216.0 / 612.0;
         _textView = textView;
         _characterNames = @[];
         _containerWidth = 612.0;
+        _fontSize = 12.0;
         [self buildCachedResources];
         [textView.textStorage setDelegate:self];
         [self highlightAll];
@@ -68,10 +71,21 @@ static const CGFloat kFracIndentParenthetical = 216.0 / 612.0;
     [self highlightAll];
 }
 
+- (void)setFontSize:(CGFloat)fontSize {
+    if (_fontSize == fontSize) return;
+    _fontSize = fontSize;
+    [self buildFonts];
+    [self highlightAll];
+}
+
+- (void)buildFonts {
+    _fontRegular = [NSFont fontWithName:@"Courier" size:_fontSize];
+    _fontBold    = [NSFont fontWithName:@"Courier-Bold" size:_fontSize];
+    _fontOblique = [NSFont fontWithName:@"Courier-Oblique" size:_fontSize] ?: _fontRegular;
+}
+
 - (void)buildCachedResources {
-    _fontRegular = [NSFont fontWithName:@"Courier" size:12];
-    _fontBold    = [NSFont fontWithName:@"Courier-Bold" size:12];
-    _fontOblique = [NSFont fontWithName:@"Courier-Oblique" size:12] ?: _fontRegular;
+    [self buildFonts];
     [self buildColors];
     [self buildParaStyles];
 }

@@ -15,6 +15,7 @@
 @property (strong) NSButton *modeButton;
 @property (strong) NSView *leftBorderView;
 @property (strong) NSView *rightBorderView;
+@property (strong) NSPopUpButton *fontSizePopup;
 - (void)applyColorScheme;
 - (void)updateStatusBar;
 - (void)layoutStatusBar;

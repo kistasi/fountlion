@@ -103,6 +103,25 @@ static const CGFloat kStatusBarHeight = 22.0;
     [self.modeButton setAction:@selector(toggleDarkMode:)];
     [self.statusBar addSubview:self.modeButton];
 
+    self.fontSizePopup = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
+    [self.fontSizePopup setControlSize:NSSmallControlSize];
+    [self.fontSizePopup setFont:[NSFont systemFontOfSize:11]];
+    for (NSNumber *pt in @[@10, @11, @12, @13, @14, @16, @18, @20, @24]) {
+        [self.fontSizePopup addItemWithTitle:[NSString stringWithFormat:@"%ld pt", (long)pt.integerValue]];
+        [[self.fontSizePopup lastItem] setRepresentedObject:pt];
+    }
+    NSInteger savedSize = [[NSUserDefaults standardUserDefaults] integerForKey:@"fontSize"];
+    if (savedSize == 0) savedSize = 12;
+    for (NSMenuItem *item in [self.fontSizePopup itemArray]) {
+        if ([item.representedObject integerValue] == savedSize) {
+            [self.fontSizePopup selectItem:item];
+            break;
+        }
+    }
+    [self.fontSizePopup setTarget:self];
+    [self.fontSizePopup setAction:@selector(fontSizeChanged:)];
+    [self.statusBar addSubview:self.fontSizePopup];
+
     [window.contentView addSubview:self.statusBar];
 
     self.leftBorderView = [[NSView alloc] initWithFrame:NSZeroRect];
@@ -137,6 +156,7 @@ static const CGFloat kStatusBarHeight = 22.0;
     }
 
     [self applyColorScheme];
+    [self applyFontSize];
     [self layoutStatusBar];
     [self centerTextView];
 
@@ -191,6 +211,23 @@ static const CGFloat kStatusBarHeight = 22.0;
 }
 
 // ---------------------------------------------------------------------------
+// Font size
+
+- (void)applyFontSize {
+    NSInteger size = [[NSUserDefaults standardUserDefaults] integerForKey:@"fontSize"];
+    if (size == 0) size = 12;
+    [self.textView setFont:[NSFont fontWithName:@"Courier" size:size]];
+    self.highlighter.fontSize = size;
+}
+
+- (void)fontSizeChanged:(id)sender {
+    NSInteger size = [[[self.fontSizePopup selectedItem] representedObject] integerValue];
+    [[NSUserDefaults standardUserDefaults] setInteger:size forKey:@"fontSize"];
+    [self.textView setFont:[NSFont fontWithName:@"Courier" size:size]];
+    self.highlighter.fontSize = size;
+}
+
+// ---------------------------------------------------------------------------
 // Status bar
 
 - (void)layoutStatusBar {
@@ -198,19 +235,24 @@ static const CGFloat kStatusBarHeight = 22.0;
     CGFloat W = NSWidth(self.statusBar.frame);
     CGFloat H = NSHeight(self.statusBar.frame);
     CGFloat pad = 8.0;
-    CGFloat btnW = 90.0;
-    CGFloat cntW = 185.0;
+    CGFloat btnW  = 90.0;
+    CGFloat popW  = 62.0;
+    CGFloat cntW  = 185.0;
     CGFloat labelH = 15.0;
-    CGFloat y = floor((H - labelH) / 2.0);
+    CGFloat popH   = 18.0;
+    CGFloat y    = floor((H - labelH) / 2.0);
+    CGFloat popY = floor((H - popH)   / 2.0);
 
     CGFloat btnX = W - pad - btnW;
-    CGFloat cntX = btnX - pad - cntW;
+    CGFloat popX = btnX - pad - popW;
+    CGFloat cntX = popX - pad - cntW;
     CGFloat fileW = cntX - pad - pad;
     if (fileW < 0) fileW = 0;
 
-    [self.fileLabel setFrame:NSMakeRect(pad, y, fileW, labelH)];
-    [self.countsLabel setFrame:NSMakeRect(cntX, y, cntW, labelH)];
-    [self.modeButton setFrame:NSMakeRect(btnX, y - 1, btnW, labelH + 2)];
+    [self.fileLabel    setFrame:NSMakeRect(pad,  y,    fileW, labelH)];
+    [self.countsLabel  setFrame:NSMakeRect(cntX, y,    cntW,  labelH)];
+    [self.fontSizePopup setFrame:NSMakeRect(popX, popY, popW,  popH)];
+    [self.modeButton   setFrame:NSMakeRect(btnX, y - 1, btnW, labelH + 2)];
     [self.separatorView setFrame:NSMakeRect(0, H - 1, W, 1)];
 }
 

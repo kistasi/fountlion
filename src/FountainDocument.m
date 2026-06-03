@@ -147,11 +147,9 @@ static const CGFloat kStatusBarHeight = 22.0;
         [self.textView setInsertionPointColor:[NSColor colorWithCalibratedWhite:0.9 alpha:1.0]];
         [self.scrollView setBackgroundColor:[NSColor colorWithCalibratedWhite:0.18 alpha:1.0]];
         [self.statusBar setWantsLayer:YES];
-        [self.statusBar layer].backgroundColor =
-            [NSColor colorWithCalibratedWhite:0.15 alpha:1.0].CGColor;
+        [self.statusBar layer].backgroundColor = CGColorCreateGenericGray(0.15, 1.0);
         [self.separatorView setWantsLayer:YES];
-        [self.separatorView layer].backgroundColor =
-            [NSColor colorWithCalibratedWhite:0.22 alpha:1.0].CGColor;
+        [self.separatorView layer].backgroundColor = CGColorCreateGenericGray(0.22, 1.0);
         textColor = [NSColor colorWithCalibratedWhite:0.65 alpha:1.0];
     } else {
         [self.textView setBackgroundColor:[NSColor whiteColor]];
@@ -159,11 +157,9 @@ static const CGFloat kStatusBarHeight = 22.0;
         [self.textView setInsertionPointColor:[NSColor blackColor]];
         [self.scrollView setBackgroundColor:[NSColor colorWithCalibratedWhite:0.80 alpha:1.0]];
         [self.statusBar setWantsLayer:YES];
-        [self.statusBar layer].backgroundColor =
-            [NSColor colorWithCalibratedWhite:0.93 alpha:1.0].CGColor;
+        [self.statusBar layer].backgroundColor = CGColorCreateGenericGray(0.93, 1.0);
         [self.separatorView setWantsLayer:YES];
-        [self.separatorView layer].backgroundColor =
-            [NSColor colorWithCalibratedWhite:0.75 alpha:1.0].CGColor;
+        [self.separatorView layer].backgroundColor = CGColorCreateGenericGray(0.75, 1.0);
         textColor = [NSColor colorWithCalibratedWhite:0.3 alpha:1.0];
     }
     [self.fileLabel setTextColor:textColor];

@@ -49,7 +49,7 @@ static const CGFloat kFracIndentParenthetical = 216.0 / 612.0;
         _textView = textView;
         _characterNames = @[];
         _containerWidth = 612.0;
-        _fontSize = 12.0;
+        _fontSize = 14.0;
         [self buildCachedResources];
         [textView.textStorage setDelegate:self];
         [self highlightAll];

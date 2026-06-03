@@ -111,7 +111,7 @@ static const CGFloat kStatusBarHeight = 22.0;
         [[self.fontSizePopup lastItem] setRepresentedObject:pt];
     }
     NSInteger savedSize = [[NSUserDefaults standardUserDefaults] integerForKey:@"fontSize"];
-    if (savedSize == 0) savedSize = 12;
+    if (savedSize == 0) savedSize = 14;
     for (NSMenuItem *item in [self.fontSizePopup itemArray]) {
         if ([item.representedObject integerValue] == savedSize) {
             [self.fontSizePopup selectItem:item];
@@ -215,7 +215,7 @@ static const CGFloat kStatusBarHeight = 22.0;
 
 - (void)applyFontSize {
     NSInteger size = [[NSUserDefaults standardUserDefaults] integerForKey:@"fontSize"];
-    if (size == 0) size = 12;
+    if (size == 0) size = 14;
     [self.textView setFont:[NSFont fontWithName:@"Courier" size:size]];
     self.highlighter.fontSize = size;
 }

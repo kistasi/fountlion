@@ -22,6 +22,17 @@ static NSString * const kNewDocumentTemplate =
 
 static const CGFloat kPageWidth = 612.0;  // 8.5" at 72 pt/in
 static const CGFloat kStatusBarHeight = 22.0;
+static const CGFloat kContainerWidthFraction = 0.7;
+
+- (NSTextField *)makePlainLabel {
+    NSTextField *label = [[NSTextField alloc] initWithFrame:NSZeroRect];
+    [label setEditable:NO];
+    [label setSelectable:NO];
+    [label setBordered:NO];
+    [label setDrawsBackground:NO];
+    [label setFont:[NSFont systemFontOfSize:11]];
+    return label;
+}
 
 - (void)makeWindowControllers {
     NSUInteger style = NSTitledWindowMask | NSClosableWindowMask |
@@ -47,7 +58,7 @@ static const CGFloat kStatusBarHeight = 22.0;
     [self.scrollView setDrawsBackground:YES];
 
     NSSize cs = self.scrollView.contentSize;
-    CGFloat containerW = floor(cs.width * 0.7);
+    CGFloat containerW = floor(cs.width * kContainerWidthFraction);
     CGFloat hInset = floor((cs.width - containerW) / 2.0);
 
     self.textView =
@@ -77,21 +88,11 @@ static const CGFloat kStatusBarHeight = 22.0;
     self.separatorView = [[NSView alloc] initWithFrame:NSZeroRect];
     [self.statusBar addSubview:self.separatorView];
 
-    self.fileLabel = [[NSTextField alloc] initWithFrame:NSZeroRect];
-    [self.fileLabel setEditable:NO];
-    [self.fileLabel setSelectable:NO];
-    [self.fileLabel setBordered:NO];
-    [self.fileLabel setDrawsBackground:NO];
-    [self.fileLabel setFont:[NSFont systemFontOfSize:11]];
+    self.fileLabel = [self makePlainLabel];
     [[self.fileLabel cell] setLineBreakMode:NSLineBreakByTruncatingHead];
     [self.statusBar addSubview:self.fileLabel];
 
-    self.countsLabel = [[NSTextField alloc] initWithFrame:NSZeroRect];
-    [self.countsLabel setEditable:NO];
-    [self.countsLabel setSelectable:NO];
-    [self.countsLabel setBordered:NO];
-    [self.countsLabel setDrawsBackground:NO];
-    [self.countsLabel setFont:[NSFont systemFontOfSize:11]];
+    self.countsLabel = [self makePlainLabel];
     [self.countsLabel setAlignment:NSRightTextAlignment];
     [self.statusBar addSubview:self.countsLabel];
 
@@ -296,7 +297,7 @@ static const CGFloat kStatusBarHeight = 22.0;
         [self.textView setFrame:tvFrame];
     }
 
-    CGFloat containerW = floor(W * 0.7);
+    CGFloat containerW = floor(W * kContainerWidthFraction);
     CGFloat hInset = floor((W - containerW) / 2.0);
     [[self.textView textContainer] setContainerSize:NSMakeSize(containerW, FLT_MAX)];
     [self.textView setTextContainerInset:NSMakeSize(hInset, 20)];

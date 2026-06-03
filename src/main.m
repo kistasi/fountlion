@@ -72,18 +72,18 @@
     NSMenuItem *findPanel = [findMenu addItemWithTitle:@"Find…"
                                                 action:@selector(performFindPanelAction:)
                                          keyEquivalent:@"f"];
-    findPanel.tag = 1;  // NSFindPanelActionShowFindPanel
+    findPanel.tag = NSFindPanelActionShowFindPanel;
 
     NSMenuItem *findNext = [findMenu addItemWithTitle:@"Find Next"
                                                action:@selector(performFindPanelAction:)
                                         keyEquivalent:@"g"];
-    findNext.tag = 2;   // NSFindPanelActionNext
+    findNext.tag = NSFindPanelActionNext;
 
     NSMenuItem *findPrev = [findMenu addItemWithTitle:@"Find Previous"
                                                action:@selector(performFindPanelAction:)
                                         keyEquivalent:@"g"];
     [findPrev setKeyEquivalentModifierMask:NSShiftKeyMask | NSCommandKeyMask];
-    findPrev.tag = 3;   // NSFindPanelActionPrevious
+    findPrev.tag = NSFindPanelActionPrevious;
 
     [editMenu addItem:findItem];
 

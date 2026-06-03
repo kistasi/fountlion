@@ -3,7 +3,7 @@
 #import "vendor/FNElement.h"
 
 // Proportional screenplay margins relative to a standard 612-pt page.
-static const CGFloat kFracIndentBody          = 108.0 / 612.0;
+static const CGFloat kFracIndentBody          =  72.0 / 612.0;
 static const CGFloat kFracTailBody            =  72.0 / 612.0;  // magnitude; applied as negative
 static const CGFloat kFracIndentCharacter     = 252.0 / 612.0;
 static const CGFloat kFracIndentDialogue      = 180.0 / 612.0;

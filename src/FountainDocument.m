@@ -330,10 +330,10 @@ static const CGFloat kContainerWidthFraction = 0.7;
 - (NSString *)stripTrailingCompatComment:(NSString *)text {
     NSArray *pairs = @[@[@"/*", @"*/"], @[@"[[", @"]]"]];
     for (NSArray *pair in pairs) {
-        NSRange startRange = [text rangeOfString:pair[0] options:NSBackwardsSearch];
+        NSRange startRange = [text rangeOfString:[pair objectAtIndex:0] options:NSBackwardsSearch];
         if (startRange.location == NSNotFound) continue;
         NSUInteger afterOpen = NSMaxRange(startRange);
-        NSRange closeRange = [text rangeOfString:pair[1]
+        NSRange closeRange = [text rangeOfString:[pair objectAtIndex:1]
                                          options:0
                                            range:NSMakeRange(afterOpen, text.length - afterOpen)];
         if (closeRange.location == NSNotFound) continue;

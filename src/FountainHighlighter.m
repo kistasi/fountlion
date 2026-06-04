@@ -207,7 +207,7 @@ static const CGFloat kFracIndentParenthetical = 216.0 / 612.0;
             BOOL isTrailingCompatComment = (elemIdx == elements.count - 1) &&
                 ([el.elementType isEqualToString:@"Comment"] || [el.elementType isEqualToString:@"Boneyard"]);
             NSDictionary *attrs = isTrailingCompatComment
-                ? @{ NSFontAttributeName: _fontRegular, NSForegroundColorAttributeName: [NSColor clearColor] }
+                ? [self hiddenAttrs]
                 : [self attrsForType:el.elementType centered:el.isCentered];
             [ts setAttributes:attrs range:NSMakeRange(startOff, endOff - startOff)];
         }
@@ -259,6 +259,16 @@ static const CGFloat kFracIndentParenthetical = 216.0 / 612.0;
 
 // ---------------------------------------------------------------------------
 // Attribute dictionaries
+
+- (NSDictionary *)hiddenAttrs {
+    NSMutableParagraphStyle *para = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+    para.minimumLineHeight = 0.0;
+    para.maximumLineHeight = 0.1;
+    NSFont *tiny = [NSFont fontWithName:@"Courier" size:1.0];
+    return @{ NSFontAttributeName: tiny ?: _fontRegular,
+              NSForegroundColorAttributeName: [NSColor clearColor],
+              NSParagraphStyleAttributeName: [para copy] };
+}
 
 - (NSDictionary *)attrsForType:(NSString *)type centered:(BOOL)centered {
     if ([type isEqualToString:@"Scene Heading"]) {

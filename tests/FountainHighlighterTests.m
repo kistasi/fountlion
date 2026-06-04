@@ -127,14 +127,17 @@ static NSString * const kScript = @"INT. OFFICE - DAY\n\nJOHN\nHello.";
 }
 
 - (void)test_trailingComment_isHidden {
-    // The last element, if a comment/boneyard, must be invisible (compatibility marker).
+    // The last element, if a comment/boneyard, must be invisible and take no vertical space.
     NSString *script = @"INT. X - DAY\n\n[[compat marker]]";
     [self.textView setString:script];
     [self.highlighter highlightAll];
     NSUInteger offset = [script rangeOfString:@"[[compat marker]]"].location;
-    NSColor *color = [[self attrsAt:offset][NSForegroundColorAttributeName]
+    NSDictionary *attrs = [self attrsAt:offset];
+    NSColor *color = [attrs[NSForegroundColorAttributeName]
                         colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
+    NSParagraphStyle *para = attrs[NSParagraphStyleAttributeName];
     XCTAssertEqualWithAccuracy(color.alphaComponent, 0.0, 0.01);
+    XCTAssertLessThan(para.maximumLineHeight, 1.0);
 }
 
 - (void)test_parenthetical_hasCorrectIndent {

@@ -36,8 +36,9 @@ static const CGFloat kPageHeight = 792.0;  // US letter at 72 pt/in
     NSUInteger totalLen   = self.textStorage.length;
     NSFont    *font       = self.font ?: [NSFont fontWithName:@"Courier" size:12];
     NSColor   *color      = self.textColor ?: [NSColor grayColor];
-    NSDictionary *attrs   = @{ NSFontAttributeName: font,
-                                NSForegroundColorAttributeName: color };
+    NSDictionary *attrs   = [NSDictionary dictionaryWithObjectsAndKeys:
+                                font,  NSFontAttributeName,
+                                color, NSForegroundColorAttributeName, nil];
 
     NSUInteger lastPage = 0;
 

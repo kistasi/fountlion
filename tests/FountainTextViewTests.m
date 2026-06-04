@@ -21,7 +21,7 @@
     self.textView = [[FountainTextView alloc] initWithFrame:NSMakeRect(0, 0, 800, 600)];
     self.highlighter = [[FountainHighlighter alloc] initWithTextView:self.textView];
     self.textView.highlighter = self.highlighter;
-    self.textView.characterNamesProvider = ^NSArray *{ return @[@"ALICE", @"BOB", @"MARY"]; };
+    self.textView.characterNamesProvider = ^NSArray *{ return [NSArray arrayWithObjects:@"ALICE", @"BOB", @"MARY", nil]; };
 }
 
 // ===========================================================================
@@ -62,6 +62,24 @@
     // Line must be at least 2 characters.
     [self.textView setString:@"A"];
     [self.textView setSelectedRange:NSMakeRange(1, 0)];
+    XCTAssertFalse([self.textView currentLineIsCharacterCue]);
+}
+
+- (void)test_currentLineIsCharacterCue_sceneHeadingIE_returnsNO {
+    [self.textView setString:@"I/E MOVING CAR"];
+    [self.textView setSelectedRange:NSMakeRange(14, 0)];
+    XCTAssertFalse([self.textView currentLineIsCharacterCue]);
+}
+
+- (void)test_currentLineIsCharacterCue_fadeOut_returnsNO {
+    [self.textView setString:@"FADE OUT."];
+    [self.textView setSelectedRange:NSMakeRange(9, 0)];
+    XCTAssertFalse([self.textView currentLineIsCharacterCue]);
+}
+
+- (void)test_currentLineIsCharacterCue_fadeIn_returnsNO {
+    [self.textView setString:@"FADE IN:"];
+    [self.textView setSelectedRange:NSMakeRange(8, 0)];
     XCTAssertFalse([self.textView currentLineIsCharacterCue]);
 }
 
@@ -113,7 +131,7 @@
 
 - (void)test_completions_multipleMatches {
     // "B" matches BOB; "M" matches MARY — set up a provider with both.
-    self.textView.characterNamesProvider = ^NSArray *{ return @[@"BOB", @"BARBARA", @"MARY"]; };
+    self.textView.characterNamesProvider = ^NSArray *{ return [NSArray arrayWithObjects:@"BOB", @"BARBARA", @"MARY", nil]; };
     [self.textView setString:@"B"];
     NSArray *completions = [self.textView completionsForPartialWordRange:NSMakeRange(0, 1)
                                                      indexOfSelectedItem:nil];

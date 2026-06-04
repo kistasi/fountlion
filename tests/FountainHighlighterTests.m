@@ -247,6 +247,29 @@ static NSString * const kScript = @"INT. OFFICE - DAY\n\nJOHN\nHello.";
     XCTAssertEqualWithAccuracy(font.pointSize, original, 0.01);
 }
 
+- (void)test_centeredAction_hasCenterAlignment {
+    NSDictionary *attrs = [self.highlighter attrsForType:@"Action" centered:YES];
+    NSParagraphStyle *p = attrs[NSParagraphStyleAttributeName];
+    XCTAssertEqual(p.alignment, NSCenterTextAlignment);
+}
+
+- (void)test_setContainerWidth_noChangeSkipsRebuild {
+    CGFloat original = self.highlighter.containerWidth;
+    NSParagraphStyle *p1 = [self.highlighter attrsForType:@"Character" centered:NO][NSParagraphStyleAttributeName];
+    XCTAssertNoThrow(self.highlighter.containerWidth = original);
+    NSParagraphStyle *p2 = [self.highlighter attrsForType:@"Character" centered:NO][NSParagraphStyleAttributeName];
+    XCTAssertEqualWithAccuracy(p1.headIndent, p2.headIndent, 0.01);
+}
+
+- (void)test_setDarkMode_noChangeSkipsRebuild {
+    BOOL original = self.highlighter.darkMode;
+    XCTAssertNoThrow(self.highlighter.darkMode = original);
+    // Color should be unchanged: light mode text color is black (0,0,0 in RGB).
+    NSColor *color = [[self attrsAt:0][NSForegroundColorAttributeName]
+                        colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
+    XCTAssertEqualWithAccuracy(color.redComponent, original ? 0.92 : 0.0, 0.05);
+}
+
 - (void)test_darkMode_sectionHeading_colorChanges {
     NSString *script = @"# ACT ONE";
     [self.textView setString:script];

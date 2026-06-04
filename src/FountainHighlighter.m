@@ -258,30 +258,30 @@ static const CGFloat kFracIndentParenthetical = 216.0 / 612.0;
 
 - (NSDictionary *)attrsForType:(NSString *)type centered:(BOOL)centered {
     if ([type isEqualToString:@"Scene Heading"]) {
-        return @{ NSFontAttributeName: _fontBold,    NSForegroundColorAttributeName: _colorText,   NSParagraphStyleAttributeName: _paraBody         };
+        return [NSDictionary dictionaryWithObjectsAndKeys:_fontBold,    NSFontAttributeName, _colorText,   NSForegroundColorAttributeName, _paraBody,          NSParagraphStyleAttributeName, nil];
     }
     if ([type isEqualToString:@"Character"]) {
-        return @{ NSFontAttributeName: _fontRegular, NSForegroundColorAttributeName: _colorText,   NSParagraphStyleAttributeName: _paraCharacter     };
+        return [NSDictionary dictionaryWithObjectsAndKeys:_fontRegular, NSFontAttributeName, _colorText,   NSForegroundColorAttributeName, _paraCharacter,     NSParagraphStyleAttributeName, nil];
     }
     if ([type isEqualToString:@"Dialogue"]) {
-        return @{ NSFontAttributeName: _fontRegular, NSForegroundColorAttributeName: _colorText,   NSParagraphStyleAttributeName: _paraDialogue      };
+        return [NSDictionary dictionaryWithObjectsAndKeys:_fontRegular, NSFontAttributeName, _colorText,   NSForegroundColorAttributeName, _paraDialogue,      NSParagraphStyleAttributeName, nil];
     }
     if ([type isEqualToString:@"Parenthetical"]) {
-        return @{ NSFontAttributeName: _fontRegular, NSForegroundColorAttributeName: _colorText,   NSParagraphStyleAttributeName: _paraParenthetical };
+        return [NSDictionary dictionaryWithObjectsAndKeys:_fontRegular, NSFontAttributeName, _colorText,   NSForegroundColorAttributeName, _paraParenthetical, NSParagraphStyleAttributeName, nil];
     }
     if ([type isEqualToString:@"Transition"]) {
-        return @{ NSFontAttributeName: _fontRegular, NSForegroundColorAttributeName: _colorText,   NSParagraphStyleAttributeName: _paraTransition    };
+        return [NSDictionary dictionaryWithObjectsAndKeys:_fontRegular, NSFontAttributeName, _colorText,   NSForegroundColorAttributeName, _paraTransition,    NSParagraphStyleAttributeName, nil];
     }
     if ([type isEqualToString:@"Section Heading"]) {
-        return @{ NSFontAttributeName: _fontBold,    NSForegroundColorAttributeName: _colorAccent, NSParagraphStyleAttributeName: _paraBody         };
+        return [NSDictionary dictionaryWithObjectsAndKeys:_fontBold,    NSFontAttributeName, _colorAccent, NSForegroundColorAttributeName, _paraBody,          NSParagraphStyleAttributeName, nil];
     }
     if ([type isEqualToString:@"Synopsis"] ||
         [type isEqualToString:@"Comment"]  ||
         [type isEqualToString:@"Boneyard"]) {
-        return @{ NSFontAttributeName: _fontOblique, NSForegroundColorAttributeName: _colorGray,   NSParagraphStyleAttributeName: _paraBody         };
+        return [NSDictionary dictionaryWithObjectsAndKeys:_fontOblique, NSFontAttributeName, _colorGray,   NSForegroundColorAttributeName, _paraBody,          NSParagraphStyleAttributeName, nil];
     }
     NSParagraphStyle *para = centered ? _paraCenter : _paraBody;
-    return @{ NSFontAttributeName: _fontRegular, NSForegroundColorAttributeName: _colorText, NSParagraphStyleAttributeName: para };
+    return [NSDictionary dictionaryWithObjectsAndKeys:_fontRegular, NSFontAttributeName, _colorText, NSForegroundColorAttributeName, para, NSParagraphStyleAttributeName, nil];
 }
 
 @end

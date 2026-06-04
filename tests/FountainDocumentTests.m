@@ -124,6 +124,15 @@
     XCTAssertEqualObjects(recovered, original);
 }
 
+- (void)test_midDocumentBoneyard_isNotStripped {
+    // /* ... */ with non-whitespace text after the closing tag must NOT be stripped.
+    FountainDocument *doc = [self freshDoc];
+    NSString *text = @"INT. X - DAY\n\n/* note */\n\nAction after.";
+    [doc readFromData:[self utf8:text] ofType:@"fountain" error:nil];
+    XCTAssertNil(doc.trailingComment);
+    XCTAssertEqualObjects(doc.pendingContent, text);
+}
+
 - (void)test_midDocumentComment_isNotStripped {
     FountainDocument *doc = [self freshDoc];
     NSString *text = @"INT. X - DAY\n\n[[note]]\n\nAction.";

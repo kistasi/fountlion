@@ -185,9 +185,13 @@ static const CGFloat kContainerWidthFraction = 0.7;
         [self.textView setInsertionPointColor:[NSColor colorWithCalibratedWhite:0.9 alpha:1.0]];
         [self.scrollView setBackgroundColor:[NSColor colorWithCalibratedWhite:0.18 alpha:1.0]];
         [self.statusBar setWantsLayer:YES];
-        [self.statusBar layer].backgroundColor = CGColorCreateGenericGray(0.15, 1.0);
+        CGColorRef sbDark = CGColorCreateGenericGray(0.15, 1.0);
+        [self.statusBar layer].backgroundColor = sbDark;
+        CGColorRelease(sbDark);
         [self.separatorView setWantsLayer:YES];
-        [self.separatorView layer].backgroundColor = CGColorCreateGenericGray(0.22, 1.0);
+        CGColorRef sepDark = CGColorCreateGenericGray(0.22, 1.0);
+        [self.separatorView layer].backgroundColor = sepDark;
+        CGColorRelease(sepDark);
         textColor = [NSColor colorWithCalibratedWhite:0.65 alpha:1.0];
     } else {
         [self.textView setBackgroundColor:[NSColor whiteColor]];
@@ -195,17 +199,22 @@ static const CGFloat kContainerWidthFraction = 0.7;
         [self.textView setInsertionPointColor:[NSColor blackColor]];
         [self.scrollView setBackgroundColor:[NSColor colorWithCalibratedWhite:0.80 alpha:1.0]];
         [self.statusBar setWantsLayer:YES];
-        [self.statusBar layer].backgroundColor = CGColorCreateGenericGray(0.93, 1.0);
+        CGColorRef sbLight = CGColorCreateGenericGray(0.93, 1.0);
+        [self.statusBar layer].backgroundColor = sbLight;
+        CGColorRelease(sbLight);
         [self.separatorView setWantsLayer:YES];
-        [self.separatorView layer].backgroundColor = CGColorCreateGenericGray(0.75, 1.0);
+        CGColorRef sepLight = CGColorCreateGenericGray(0.75, 1.0);
+        [self.separatorView layer].backgroundColor = sepLight;
+        CGColorRelease(sepLight);
         textColor = [NSColor colorWithCalibratedWhite:0.3 alpha:1.0];
     }
     [self.fileLabel setTextColor:textColor];
     [self.countsLabel setTextColor:textColor];
+    NSDictionary *titleAttrs = [NSDictionary dictionaryWithObjectsAndKeys:
+        textColor, NSForegroundColorAttributeName,
+        [NSFont systemFontOfSize:11], NSFontAttributeName, nil];
     [self.modeButton setAttributedTitle:
-        [[NSAttributedString alloc] initWithString:@"Dark Mode"
-            attributes:@{NSForegroundColorAttributeName: textColor,
-                         NSFontAttributeName: [NSFont systemFontOfSize:11]}]];
+        [[NSAttributedString alloc] initWithString:@"Dark Mode" attributes:titleAttrs]];
     [self.modeButton setState:dark ? NSOnState : NSOffState];
     self.highlighter.darkMode = dark;
     if (self.leftBorderView) {

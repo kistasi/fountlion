@@ -204,8 +204,12 @@ static const CGFloat kFracIndentParenthetical = 216.0 / 612.0;
                           + ((NSString *)[lines objectAtIndex:endLineIdx]).length;
 
         if (startOff <= endOff && endOff <= len) {
-            [ts setAttributes:[self attrsForType:el.elementType centered:el.isCentered]
-                        range:NSMakeRange(startOff, endOff - startOff)];
+            BOOL isTrailingCompatComment = (elemIdx == elements.count - 1) &&
+                ([el.elementType isEqualToString:@"Comment"] || [el.elementType isEqualToString:@"Boneyard"]);
+            NSDictionary *attrs = isTrailingCompatComment
+                ? @{ NSFontAttributeName: _fontRegular, NSForegroundColorAttributeName: [NSColor clearColor] }
+                : [self attrsForType:el.elementType centered:el.isCentered];
+            [ts setAttributes:attrs range:NSMakeRange(startOff, endOff - startOff)];
         }
 
         if ([el.elementType isEqualToString:@"Scene Heading"] && startOff <= endOff && endOff <= len) {

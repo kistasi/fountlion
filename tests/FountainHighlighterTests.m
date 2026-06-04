@@ -114,7 +114,8 @@ static NSString * const kScript = @"INT. OFFICE - DAY\n\nJOHN\nHello.";
 }
 
 - (void)test_comment_isGray {
-    NSString *script = @"INT. X - DAY\n\n[[A note here]]";
+    // Comment that is NOT the last element must render as gray.
+    NSString *script = @"INT. X - DAY\n\n[[A note here]]\n\nAction line.";
     [self.textView setString:script];
     [self.highlighter highlightAll];
     NSUInteger offset = [script rangeOfString:@"[[A note here]]"].location;
@@ -123,6 +124,17 @@ static NSString * const kScript = @"INT. OFFICE - DAY\n\nJOHN\nHello.";
     // Gray: all components roughly equal and not black.
     XCTAssertGreaterThan(color.redComponent, 0.3);
     XCTAssertEqualWithAccuracy(color.redComponent, color.blueComponent, 0.1);
+}
+
+- (void)test_trailingComment_isHidden {
+    // The last element, if a comment/boneyard, must be invisible (compatibility marker).
+    NSString *script = @"INT. X - DAY\n\n[[compat marker]]";
+    [self.textView setString:script];
+    [self.highlighter highlightAll];
+    NSUInteger offset = [script rangeOfString:@"[[compat marker]]"].location;
+    NSColor *color = [[self attrsAt:offset][NSForegroundColorAttributeName]
+                        colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
+    XCTAssertEqualWithAccuracy(color.alphaComponent, 0.0, 0.01);
 }
 
 - (void)test_parenthetical_hasCorrectIndent {

@@ -91,6 +91,48 @@
 }
 
 // ---------------------------------------------------------------------------
+// Trailing compatibility comment strip/restore
+
+- (void)test_trailingNote_isStrippedFromPendingContent {
+    FountainDocument *doc = [self freshDoc];
+    NSString *text = @"INT. X - DAY\n\nAction.\n\n[[compat]]";
+    [doc readFromData:[self utf8:text] ofType:@"fountain" error:nil];
+    XCTAssertFalse([doc.pendingContent containsString:@"[[compat]]"]);
+    XCTAssertEqualObjects(doc.trailingComment, @"[[compat]]");
+}
+
+- (void)test_trailingBoneyard_isStrippedFromPendingContent {
+    FountainDocument *doc = [self freshDoc];
+    NSString *text = @"INT. X - DAY\n\nAction.\n\n/* compat */";
+    [doc readFromData:[self utf8:text] ofType:@"fountain" error:nil];
+    XCTAssertFalse([doc.pendingContent containsString:@"/* compat */"]);
+    XCTAssertEqualObjects(doc.trailingComment, @"/* compat */");
+}
+
+- (void)test_trailingComment_roundTrip {
+    FountainDocument *doc = [self freshDoc];
+    NSString *original = @"INT. X - DAY\n\nAction.\n\n[[compat]]";
+    [doc readFromData:[self utf8:original] ofType:@"fountain" error:nil];
+
+    NSTextView *tv = [[NSTextView alloc] initWithFrame:NSMakeRect(0, 0, 800, 600)];
+    [tv setString:doc.pendingContent];
+    doc.textView = tv;
+    doc.pendingContent = nil;
+
+    NSData *saved = [doc dataOfType:@"fountain" error:nil];
+    NSString *recovered = [[NSString alloc] initWithData:saved encoding:NSUTF8StringEncoding];
+    XCTAssertEqualObjects(recovered, original);
+}
+
+- (void)test_midDocumentComment_isNotStripped {
+    FountainDocument *doc = [self freshDoc];
+    NSString *text = @"INT. X - DAY\n\n[[note]]\n\nAction.";
+    [doc readFromData:[self utf8:text] ofType:@"fountain" error:nil];
+    XCTAssertNil(doc.trailingComment);
+    XCTAssertEqualObjects(doc.pendingContent, text);
+}
+
+// ---------------------------------------------------------------------------
 // Status bar helpers
 
 - (FountainDocument *)docWithTextView:(NSString *)content {

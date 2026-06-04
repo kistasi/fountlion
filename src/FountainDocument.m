@@ -323,8 +323,39 @@ static const CGFloat kContainerWidthFraction = 0.7;
 // ---------------------------------------------------------------------------
 // NSDocument file I/O
 
+// Strips a trailing Fountain compatibility comment ([[...]] or /* ... */) from
+// `text`, stores it in self.trailingComment, and returns the stripped text.
+// The full suffix from the last newline before the opener is stored so that the
+// file round-trips byte-for-byte on save.
+- (NSString *)stripTrailingCompatComment:(NSString *)text {
+    struct { NSString *open; NSString *close; } delims[2] = {
+        { @"/*", @"*/" },
+        { @"[[", @"]]" },
+    };
+    for (int i = 0; i < 2; i++) {
+        NSRange startRange = [text rangeOfString:delims[i].open options:NSBackwardsSearch];
+        if (startRange.location == NSNotFound) continue;
+        NSUInteger afterOpen = NSMaxRange(startRange);
+        NSRange closeRange = [text rangeOfString:delims[i].close
+                                         options:0
+                                           range:NSMakeRange(afterOpen, text.length - afterOpen)];
+        if (closeRange.location == NSNotFound) continue;
+        NSUInteger afterClose = NSMaxRange(closeRange);
+        // Only treat as trailing if nothing but whitespace follows the closing delimiter.
+        NSString *tail = [text substringFromIndex:afterClose];
+        if ([[tail stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] > 0) continue;
+        // Split just before the opening delimiter, preserving leading newlines in the suffix.
+        self.trailingComment = [text substringFromIndex:startRange.location];
+        return [text substringToIndex:startRange.location];
+    }
+    self.trailingComment = nil;
+    return text;
+}
+
 - (NSData *)dataOfType:(NSString *)typeName error:(NSError **)outError {
     NSString *text = self.textView ? [self.textView string] : @"";
+    if (self.trailingComment)
+        text = [text stringByAppendingString:self.trailingComment];
     return [text dataUsingEncoding:NSUTF8StringEncoding];
 }
 
@@ -336,6 +367,7 @@ static const CGFloat kContainerWidthFraction = 0.7;
     if (!text)
         text = [[NSString alloc] initWithData:data encoding:NSISOLatin1StringEncoding];
     if (!text) text = @"";
+    text = [self stripTrailingCompatComment:text];
     if (self.textView) {
         [self.textView setString:text];
     } else {

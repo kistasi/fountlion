@@ -7,6 +7,7 @@
 @property (strong) FountainTextView *textView;
 @property (strong) NSScrollView *scrollView;
 @property (strong) NSString *pendingContent;
+@property (strong) NSString *trailingComment;
 @property (strong) FountainHighlighter *highlighter;
 @property (strong) NSView *statusBar;
 @property (strong) NSView *separatorView;

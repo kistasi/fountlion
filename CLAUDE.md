@@ -53,6 +53,23 @@ Both use `highlighter.sceneHeadingRanges` (an array of `NSValue`-wrapped `NSRang
 
 **Vendor** — `src/vendor/`: `FastFountainParser` / `FNElement` / `NSString+Regex` are third-party (nyousefi/Fountain, MIT). Do not modify them; treat them as a stable API.
 
+## Objective-C syntax: what works on Lion (10.7)
+
+The app is compiled with the Clang version shipped with Xcode on Lion, which predates the "modern Objective-C" literals and subscripting introduced in Xcode 4.4 / LLVM 4.0. **Do not use any of the following:**
+
+| Feature | Wrong | Right |
+|---|---|---|
+| Array literals | `@[@"a", @"b"]` | `[NSArray arrayWithObjects:@"a", @"b", nil]` |
+| Empty array literal | `@[]` | `[NSArray array]` |
+| Dictionary literals | `@{@"k": @"v"}` | `[NSDictionary dictionaryWithObject:@"v" forKey:@"k"]` |
+| Number literals | `@42`, `@3.14` | `[NSNumber numberWithInt:42]`, etc. |
+| Array subscript read | `arr[i]` | `[arr objectAtIndex:i]` |
+| Dictionary subscript read | `dict[@"k"]` | `[dict objectForKey:@"k"]` |
+| Array/dict subscript write | `arr[i] = x` | `[arr replaceObjectAtIndex:i withObject:x]` |
+| ObjC objects in C structs | `struct { NSString *s; }` | Not allowed under ARC; use a helper method or separate variables |
+
+**What does work:** ARC, blocks, `@property`/`@synthesize`, fast enumeration (`for … in`), `NSMutableArray`/`NSMutableDictionary`, string literals (`@"…"`), `instancetype`, `__weak`/`__strong`.
+
 ## Key constraints
 
 - The page width is fixed at 612 pt (8.5" @ 72 dpi). All margin constants in `src/FountainHighlighter.m` are in points relative to that page width — change them there, not in paragraph-style build code scattered elsewhere.

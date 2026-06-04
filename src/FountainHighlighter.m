@@ -49,7 +49,7 @@ static const CGFloat kFracIndentParenthetical = 216.0 / 612.0;
     self = [super init];
     if (self) {
         _textView = textView;
-        _characterNames = @[];
+        _characterNames = [NSArray array];
         _containerWidth = 612.0;
         _fontSize = 14.0;
         [self buildCachedResources];
@@ -171,11 +171,11 @@ static const CGFloat kFracIndentParenthetical = 216.0 / 612.0;
     [ts setAttributes:[self attrsForType:@"Action" centered:NO]
                 range:NSMakeRange(0, len)];
 
-    if (len == 0) { [ts endEditing]; _sceneHeadingRanges = @[]; return; }
+    if (len == 0) { [ts endEditing]; _sceneHeadingRanges = [NSArray array]; return; }
 
     FastFountainParser *parser = [[FastFountainParser alloc] initWithString:text];
     NSArray *elements = parser.elements;
-    if (!elements.count) { [ts endEditing]; _sceneHeadingRanges = @[]; return; }
+    if (!elements.count) { [ts endEditing]; _sceneHeadingRanges = [NSArray array]; return; }
 
     NSMutableSet   *names       = [NSMutableSet set];
     NSMutableArray *sceneRanges = [NSMutableArray array];

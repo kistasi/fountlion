@@ -145,10 +145,10 @@ static const CGFloat kPageHeight = 792.0;  // US letter at 72 pt/in
 
 - (NSArray *)completionsForPartialWordRange:(NSRange)charRange
                          indexOfSelectedItem:(NSInteger *)index {
-    if (!self.characterNamesProvider) return @[];
-    if (charRange.location == NSNotFound || charRange.length == 0) return @[];
+    if (!self.characterNamesProvider) return [NSArray array];
+    if (charRange.location == NSNotFound || charRange.length == 0) return [NSArray array];
     NSString *partial = [[self string] substringWithRange:charRange];
-    if (partial.length == 0) return @[];
+    if (partial.length == 0) return [NSArray array];
     NSArray *allNames = self.characterNamesProvider();
     NSMutableArray *matches = [NSMutableArray array];
     for (NSString *name in allNames) {

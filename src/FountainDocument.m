@@ -107,7 +107,13 @@ static const CGFloat kContainerWidthFraction = 0.7;
     self.fontSizePopup = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
     [[self.fontSizePopup cell] setControlSize:NSSmallControlSize];
     [self.fontSizePopup setFont:[NSFont systemFontOfSize:11]];
-    for (NSNumber *pt in @[@10, @11, @12, @13, @14, @16, @18, @20, @24]) {
+    NSArray *fontSizes = [NSArray arrayWithObjects:
+        [NSNumber numberWithInt:10], [NSNumber numberWithInt:11],
+        [NSNumber numberWithInt:12], [NSNumber numberWithInt:13],
+        [NSNumber numberWithInt:14], [NSNumber numberWithInt:16],
+        [NSNumber numberWithInt:18], [NSNumber numberWithInt:20],
+        [NSNumber numberWithInt:24], nil];
+    for (NSNumber *pt in fontSizes) {
         [self.fontSizePopup addItemWithTitle:[NSString stringWithFormat:@"%ld pt", (long)pt.integerValue]];
         [[self.fontSizePopup lastItem] setRepresentedObject:pt];
     }
@@ -327,22 +333,26 @@ static const CGFloat kContainerWidthFraction = 0.7;
 // `text`, stores it in self.trailingComment, and returns the stripped text.
 // The full suffix from the last newline before the opener is stored so that the
 // file round-trips byte-for-byte on save.
+- (BOOL)tryStripTrailing:(NSString *)text open:(NSString *)open close:(NSString *)close result:(NSString **)outStripped {
+    NSRange startRange = [text rangeOfString:open options:NSBackwardsSearch];
+    if (startRange.location == NSNotFound) return NO;
+    NSUInteger afterOpen = NSMaxRange(startRange);
+    NSRange closeRange = [text rangeOfString:close
+                                     options:0
+                                       range:NSMakeRange(afterOpen, text.length - afterOpen)];
+    if (closeRange.location == NSNotFound) return NO;
+    NSUInteger afterClose = NSMaxRange(closeRange);
+    NSString *tail = [text substringFromIndex:afterClose];
+    if ([[tail stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] > 0) return NO;
+    self.trailingComment = [text substringFromIndex:startRange.location];
+    *outStripped = [text substringToIndex:startRange.location];
+    return YES;
+}
+
 - (NSString *)stripTrailingCompatComment:(NSString *)text {
-    NSArray *pairs = @[@[@"/*", @"*/"], @[@"[[", @"]]"]];
-    for (NSArray *pair in pairs) {
-        NSRange startRange = [text rangeOfString:[pair objectAtIndex:0] options:NSBackwardsSearch];
-        if (startRange.location == NSNotFound) continue;
-        NSUInteger afterOpen = NSMaxRange(startRange);
-        NSRange closeRange = [text rangeOfString:[pair objectAtIndex:1]
-                                         options:0
-                                           range:NSMakeRange(afterOpen, text.length - afterOpen)];
-        if (closeRange.location == NSNotFound) continue;
-        NSUInteger afterClose = NSMaxRange(closeRange);
-        NSString *tail = [text substringFromIndex:afterClose];
-        if ([[tail stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] > 0) continue;
-        self.trailingComment = [text substringFromIndex:startRange.location];
-        return [text substringToIndex:startRange.location];
-    }
+    NSString *stripped = nil;
+    if ([self tryStripTrailing:text open:@"/*" close:@"*/" result:&stripped]) return stripped;
+    if ([self tryStripTrailing:text open:@"[[" close:@"]]" result:&stripped]) return stripped;
     self.trailingComment = nil;
     return text;
 }

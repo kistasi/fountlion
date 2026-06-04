@@ -30,10 +30,12 @@ Source files live in `src/` and tests in `tests/`. The vendored parser is at `sr
 - Dark mode rebuilds only colors, not paragraph styles, and triggers a full re-highlight.
 
 **Text view** — `FountainTextView` (subclass of `NSTextView`) adds two behaviors:
+
 1. **Smart newline**: after a Character cue, sets typing attributes to Dialogue style immediately (before the async re-highlight fires).
 2. **Autocomplete**: after each insertion on an all-caps line that looks like a character cue, triggers `complete:` using `characterNamesProvider` (a block wired in by `FountainDocument`).
 
 **Status bar** — A 22 pt strip at the bottom of the window, built entirely in `FountainDocument`. Five subviews:
+
 - `separatorView` — 1 pt top border line.
 - `fileLabel` — left-aligned; shows the file path (tilde-abbreviated) or "Untitled" for unsaved documents.
 - `countsLabel` — right-aligned; shows word and character counts, comma-formatted for ≥ 1000.
@@ -43,9 +45,10 @@ Source files live in `src/` and tests in `tests/`. The vendored parser is at `sr
 `layoutStatusBar` positions all subviews from fixed constants (pad=8, btnW=90, popW=62, cntW=185), laid out right-to-left: modeButton → fontSizePopup → countsLabel → fileLabel. `updateStatusBar` recomputes content; both are called on window resize, file-URL changes, and text edits. Colors are set by `applyColorScheme` alongside the rest of the color scheme.
 
 **Margin annotations** — `FountainTextView` overrides `drawRect:` to draw two sets of margin annotations after calling `super`:
+
 - Scene numbers (sequential, starting at 1) are drawn right-aligned flush against the container's left edge, one per scene heading.
 - Page numbers are drawn left of the container's right edge; only the first scene heading on each page triggers a page number. Page boundaries are computed by dividing the line-fragment Y offset by `kPageHeight` (792 pt, US Letter).
-Both use `highlighter.sceneHeadingRanges` (an array of `NSValue`-wrapped `NSRange`) populated during each highlight pass.
+  Both use `highlighter.sceneHeadingRanges` (an array of `NSValue`-wrapped `NSRange`) populated during each highlight pass.
 
 **Text container** — `centerTextView` (called on window resize and after setup) sizes the text container to `kContainerWidthFraction` (0.7) of the scroll view width, centers it with a symmetric horizontal inset, and repositions `leftBorderView`/`rightBorderView` (1 pt vertical lines) at the container edges. It also writes `containerWidth` to the highlighter so margin constants stay in sync.
 
@@ -57,16 +60,16 @@ Both use `highlighter.sceneHeadingRanges` (an array of `NSValue`-wrapped `NSRang
 
 The app is compiled with the Clang version shipped with Xcode on Lion, which predates the "modern Objective-C" literals and subscripting introduced in Xcode 4.4 / LLVM 4.0. **Do not use any of the following:**
 
-| Feature | Wrong | Right |
-|---|---|---|
-| Array literals | `@[@"a", @"b"]` | `[NSArray arrayWithObjects:@"a", @"b", nil]` |
-| Empty array literal | `@[]` | `[NSArray array]` |
-| Dictionary literals | `@{@"k": @"v"}` | `[NSDictionary dictionaryWithObject:@"v" forKey:@"k"]` |
-| Number literals | `@42`, `@3.14` | `[NSNumber numberWithInt:42]`, etc. |
-| Array subscript read | `arr[i]` | `[arr objectAtIndex:i]` |
-| Dictionary subscript read | `dict[@"k"]` | `[dict objectForKey:@"k"]` |
-| Array/dict subscript write | `arr[i] = x` | `[arr replaceObjectAtIndex:i withObject:x]` |
-| ObjC objects in C structs | `struct { NSString *s; }` | Not allowed under ARC; use a helper method or separate variables |
+| Feature                    | Wrong                     | Right                                                            |
+| -------------------------- | ------------------------- | ---------------------------------------------------------------- |
+| Array literals             | `@[@"a", @"b"]`           | `[NSArray arrayWithObjects:@"a", @"b", nil]`                     |
+| Empty array literal        | `@[]`                     | `[NSArray array]`                                                |
+| Dictionary literals        | `@{@"k": @"v"}`           | `[NSDictionary dictionaryWithObject:@"v" forKey:@"k"]`           |
+| Number literals            | `@42`, `@3.14`            | `[NSNumber numberWithInt:42]`, etc.                              |
+| Array subscript read       | `arr[i]`                  | `[arr objectAtIndex:i]`                                          |
+| Dictionary subscript read  | `dict[@"k"]`              | `[dict objectForKey:@"k"]`                                       |
+| Array/dict subscript write | `arr[i] = x`              | `[arr replaceObjectAtIndex:i withObject:x]`                      |
+| ObjC objects in C structs  | `struct { NSString *s; }` | Not allowed under ARC; use a helper method or separate variables |
 
 **What does work:** ARC, blocks, `@property`/`@synthesize`, fast enumeration (`for … in`), `NSMutableArray`/`NSMutableDictionary`, string literals (`@"…"`), `instancetype`, `__weak`/`__strong`.
 
